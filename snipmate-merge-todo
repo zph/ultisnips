@@ -1,0 +1,29 @@
+- document new option InterfaceFlavour
+
+- implement filetype specific configuration like this:
+    let s:c.ft = get(s:c, 'use_shipped_filetypes', {})
+    let s:c.ft.php = get(s:c.ft, 'php', ['*'])
+    let s:c.ft.xml = get(s:c.ft, 'xml', ['UltiSnips'])
+    let s:c.ft.javascript = get(s:c.ft, 'xml', ['*'])
+
+
+- think about how to extract tcomment's filetype detection
+  so that you get js completion in haml files in js sections etc.
+
+- keep thing working, thus keep snipmate as is but add big warnings that
+  users should switch to UltiSnips
+
+- think about how to keep the feature that snippets can be patched and
+  duplicated so that versions with and without markers can be used without
+  redundancy
+
+- introduce SnipmateOpenSnippetFiles command
+
+- wait for Holger Rapp to split snippets into its own repository, so that that
+  can be merged with snipmate-snippets
+
+- tell the mailinglist about this snippet community merge
+
+- think about refactoring plugin/* beacuse that directory should only
+  contain code which get loaded on each startup. It should only contain the
+  interface declaration. Everything else should be moved to autoload or such
