@@ -11,6 +11,9 @@ if exists('did_UltiSnips_vim') || &cp || version < 700
     finish
 endif
 
+" bind g:UltiSnips to local name s:c for convenience
+if !exists('g:UltiSnips') | let g:UltiSnips = {} | endif | let s:c = g:UltiSnips
+
 " Define dummy version of function called by autocommand setup in
 " ftdetect/UltiSnips.vim.  If the function isn't defined (probably due to
 " using a copy of vim without python support) it will cause an error anytime a
@@ -18,6 +21,7 @@ endif
 function! UltiSnips_FileTypeChanged()
 endfunction
 
+" has python guard
 if !exists("g:UltiSnipsUsePythonVersion")
     let g:_uspy=":py3 "
     if !has("python3")
@@ -38,52 +42,71 @@ else
     endif
 endif
 
-" Global Variables {{{
-
-" The trigger used to expand a snippet.
-" NOTE: expansion and forward jumping can, but needn't be the same trigger
-if !exists("g:UltiSnipsExpandTrigger")
-    let g:UltiSnipsExpandTrigger = "<tab>"
-endif
-
-" The trigger used to display all triggers that could possible 
-" match in the current position.
-if !exists("g:UltiSnipsListSnippets")
-    let g:UltiSnipsListSnippets = "<c-tab>"
-endif
-
-" The trigger used to jump forward to the next placeholder. 
-" NOTE: expansion and forward jumping can, but needn't be the same trigger
-if !exists("g:UltiSnipsJumpForwardTrigger")
-    let g:UltiSnipsJumpForwardTrigger = "<c-j>"
-endif
-
-" The trigger to jump backward inside a snippet
-if !exists("g:UltiSnipsJumpBackwardTrigger")
-    let g:UltiSnipsJumpBackwardTrigger = "<c-k>"
-endif
+" Global Variables, user interface configuration {{{
 
 " Should UltiSnips unmap select mode mappings automagically?
-if !exists("g:UltiSnipsRemoveSelectModeMappings")
-    let g:UltiSnipsRemoveSelectModeMappings = 1
-end
+let s:c['RemoveSelectModeMappings'] = get(s:c, 'RemoveSelectModeMappings', 1)
 
 " If UltiSnips should remove Mappings, which should be ignored
-if !exists("g:UltiSnipsMappingsToIgnore")
-    let g:UltiSnipsMappingsToIgnore = []
-endif
+let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
+
+" A list of directory names that are searched for snippets.
+let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )
 
 " UltiSnipsEdit will use this variable to decide if a new window
 " is opened when editing. default is "normal", allowed are also
 " "vertical", "horizontal"
-if !exists("g:UltiSnipsEditSplit")
-    let g:UltiSnipsEditSplit = 'normal'
+let s:c['EditSplit'] = get(s:c, 'EditSplit', "normal" )
+
+" use Snipmate like or UltiSnips like interface?
+" values: UltiSnips or Snipmate
+let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
+
+
+" short description for keys:
+" ExpandTrigger: NOTE: expansion and forward jumping can, but needn't be the same trigger
+" ListSnippets:  match in the current position.
+" JumpForwardTrigger: NOTE: expansion and forward jumping can, but needn't be the same trigger
+" JumpBackwardTrigger:  The trigger to jump backward inside a snippet
+
+let s:InterfaceFlavours = {}
+" Snipate like interface
+let s:InterfaceFlavours['SnipMate'] = {
+      \  'ExpandTrigger' : "<tab>",
+      \  'ListSnippets' : "<c-r><tab>",
+      \  'JumpForwardTrigger' : "<tab>",
+      \  'JumpBackwardTrigger' : "<s-tab>",
+   \ }
+
+" UltiSnips like interface
+let s:InterfaceFlavours['UltiSnips'] = {
+      \  'ExpandTrigger' : "<tab>",
+      \  'ListSnippets' : "<c-tab>",
+      \  'JumpForwardTrigger' : "<c-j>",
+      \  'JumpBackwardTrigger' : "<c-k>",
+  \  }
+if index(keys(s:InterfaceFlavours), s:c['InterfaceFlavour']) == -1
+    echoe "bad value for g:UltiSnips['InterfaceFlavour']: ".s:c['InterfaceFlavour']." valid options: ".string(keys(s:InterfaceFlavours))
 endif
 
-" A list of directory names that are searched for snippets. 
-if !exists("g:UltiSnipsSnippetDirectories")
-    let g:UltiSnipsSnippetDirectories = [ "UltiSnips" ]
-endif
+" merge flavour configuration into configuration dictionary keeping
+" existing settings
+call extend(s:c, s:InterfaceFlavours[s:c['InterfaceFlavour']], 'keep')
+
+" be compatible to configuration style, if a g:UltiSnips* setting exists assign it to
+" dictionary overriding defaults
+for k in keys(s:c)
+    if exists('g:UltiSnips'.k)
+	let s:c[k] = g:{'UltiSnips'.k}
+    endif
+endfor
+
+" be compatible to code, assign all keys to global dictionaries (the code
+" should be patched in the long run .., so this will go away)
+for [k,v] in items(s:c)
+    let g:{'UltiSnips'.k} = v
+    unlet k v
+endfor
 " }}}
 
 " Global Commands {{{
