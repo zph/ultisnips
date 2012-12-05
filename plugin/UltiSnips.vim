@@ -11,6 +11,7 @@
 " if exists('did_UltiSnips_vim') || &cp || version < 700
 "    finish
 " endif
+if &compatible | echoe "UltiSnips requires :set nocompatible" | finish | endif
 
 " bind g:UltiSnips to local name s:c for convenience
 if !exists('g:UltiSnips') | let g:UltiSnips = {} | endif | let s:c = g:UltiSnips

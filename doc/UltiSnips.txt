@@ -70,8 +70,7 @@ http://www.sirver.net/blog/2012/03/31/fourth-episode-of-ultisnips-screencast/
 1.1 Requirements                                     *UltiSnips-requirements*
 ----------------
 
-This plugin works with Vim version 7.0 or later. It only works if the
-'compatible' setting is not set.
+This plugin works with Vim version 7.0 or later.
 
 This plugin requires python >= 2.6. It has been specifically tested using
 python 2.7 and python 3.2 but should theoretically work on all versions of
