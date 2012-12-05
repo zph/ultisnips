@@ -1,4 +1,13 @@
+- create a list about what is new to Snipmate users.
+  Eg try
+  bbox<tab> to get a fealing
+
 - document new option InterfaceFlavour
+
+- extract pieces such as  (long term)
+  - markers
+  - select python, talk to python
+  - ...
 
 - implement filetype specific configuration like this:
     let s:c.ft = get(s:c, 'use_shipped_filetypes', {})
@@ -36,3 +45,70 @@ to new configuration style (move it below
 
 - think about whether to keep the plugin already sourced guard.
   It always annoys me.
+
+- bzr ? there is an official mirror of a launchpad repo on github?
+  doc/UltiSnips.txt says bzr? That's confusing. Consider updating the list of
+  repos which is available
+
+- priorities. collisions? Which is the correct way to handle them?
+  There is ! modifier, good!
+
+- make loading of snippets lazy for best performance
+
+- escaping $ etc will work. Great :) snipmate failed on that
+
+- what about reloading snippets?
+  docs say:
+	UltiSnips detects when you write changes to a snippets file and automatically
+	makes the changes active. So in the empty buffer, type the tab trigger 'bye'
+	and then press the <Tab> key.
+
+  Does this affect all instances, or just the current running Vim instance?
+
+- nested snippets
+
+- ${VISUAL}: great :-)
+
+- what about xtemplate's completion feature stuff: eg input type for form
+  elements? Does this work?
+
+- Can a snippet reference others?
+
+
+- implement Snipmates completion feature if you type only some chars such as
+  bb<tab> should display all snippets startingh with bb ?
+
+==== plugin/snipMate_compatibility.vim
+	If people use it they should be using teir own code or put this into their .vimrc
+	If they want to pollute the global namespace with a Filename word, then
+	its should be them doing so.
+	We don't want to keep cruft
+
+	" File: snipMate_compatibility.vim
+	" Author: Phillip Berndt <phillip.berndt@gmail.com>
+	" Description: Snipmate compatibility helper functions for UltiSnips
+	"
+	" Snipmate defines a function named Filename and a variable called
+	" g:snips_author for use in snippet subtitutions. See
+	"  https://github.com/msanders/snipmate.vim/blob/master/doc/snipMate.txt
+	" for details.
+	"
+
+	if exists('did_UltiSnips_snipmate_compatibility')
+		finish
+	endif
+	let did_UltiSnips_snipmate_compatibility = 1
+
+	" Define g:snips_author; some snipmate snippets use this
+	if ! exists('g:snips_author')
+		let g:snips_author = "John Doe"
+	endif
+
+	" Filename function, taken from snipMate.vim {{{
+	fun! Filename(...)
+	    let filename = expand('%:t:r')
+	    if filename == '' | return a:0 == 2 ? a:2 : '' | endif
+	    return !a:0 || a:1 == '' ? filename : substitute(a:1, '$1', filename, 'g')
+	endf
+	" }}}
+

@@ -47,29 +47,7 @@ let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
 if exists('g:UsePythonVersion')
   let s:c['PyCommand'] =  {2: ':py ', 3: ':py3 '}[g:UsePythonVersion]
 endif
-
-" which :py* command should be used? Options:
-" :py
-" :py3
-if !has_key(s:c, 'PyCommand')
-  " try to detect working python version
-  try
-    " try python3
-    py3 import vim; vim.command('let g:UltiSnips.PyCommand = "py3 "')
-  catch /.*/ 
-    try
-      " try python2
-      py import vim; vim.command('let g:UltiSnips.PyCommand = "py "')
-    catch /.*/ | endtry
-  endtry
-endif
-if !has_key(s:c, 'PyCommand')
-  " what should happen if the selected version by the users is does not work?
-  " probably it should be a lazy failure telling the user about the issue if
-  " he tries to expand a snippet. Having a strong failure here may be annoying
-  " echom at least writes to the :messages log, too.
-  echom "UltiSnips: no valid python found implementation found"
-endif
+" PyCommand is set below
 
 " short description for keys:
 " ExpandTrigger: NOTE: expansion and forward jumping can, but needn't be the same trigger
@@ -115,10 +93,37 @@ for [k,v] in items(s:c)
     let g:{'UltiSnips'.k} = v
     unlet k v
 endfor
-" because Py is used only in this file we could even use a buffer local
-" function. All code but user interface configuration should be moved to
-" autoload anyway
+
+" run py command
+" Its important to be lazy for speed reasons. On Windows the by .dll is load
+" lazily. Thus only initialize if the user acutally wants to use Snipmate
 fun! s:c.Py(command)
+  if !has_key(s:c, 'PyCommand')
+    " try to detect python:
+    " which :py* command should be used? Options:
+    " :py
+    " :py3
+    if !has_key(s:c, 'PyCommand')
+      " try to detect working python version
+      try
+        " try python3
+        py3 import vim; vim.command('let g:UltiSnips.PyCommand = "py3 "')
+      catch /.*/ 
+        try
+          " try python2
+          py import vim; vim.command('let g:UltiSnips.PyCommand = "py "')
+        catch /.*/ | endtry
+      endtry
+    endif
+    if !has_key(s:c, 'PyCommand')
+      " what should happen if the selected version by the users is does not work?
+      " probably it should be a lazy failure telling the user about the issue if
+      " he tries to expand a snippet. Having a strong failure here may be annoying
+      " echom at least writes to the :messages log, too.
+      echom "UltiSnips: no valid python found implementation found"
+    endif
+  endif
+
   if !has_key(s:c, 'PyCommand') | throw "no working python found" | endif
    exec s:c.PyCommand.a:command
 endf
@@ -157,127 +162,28 @@ command! -nargs=1 UltiSnipsAddFiletypes :call UltiSnipsAddFiletypes(<q-args>)
 
 "" }}}
 
-" FUNCTIONS {{{
-function! CompensateForPUM()
-    """ The CursorMovedI event is not triggered while the popup-menu is visible,
-    """ and it's by this event that UltiSnips updates its vim-state. The fix is
-    """ to explicitly check for the presence of the popup menu, and update
-    """ the vim-state accordingly.
-    if pumvisible()
-        call s:c.Py("UltiSnips_Manager.cursor_moved()")
-    endif
-endfunction
-function! UltiSnips_ExpandSnippet()
-    call s:c.Py("UltiSnips_Manager.expand()")
-    return ""
-endfunction
-
-function! UltiSnips_ExpandSnippetOrJump()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.expand_or_jump()")
-    return ""
-endfunction
-
-function! UltiSnips_ListSnippets()
-    call s:c.Py("UltiSnips_Manager.list_snippets()")
-    return ""
-endfunction
-
-function! UltiSnips_SaveLastVisualSelection()
-    call s:c.Py("UltiSnips_Manager.save_last_visual_selection()")
-    return ""
-endfunction
-
-function! UltiSnips_JumpBackwards()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.jump_backwards()")
-    return ""
-endfunction
-
-function! UltiSnips_JumpForwards()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.jump_forwards()")
-    return ""
-endfunction
-
-function! UltiSnips_FileTypeChanged()
-    call s:c.Py("UltiSnips_Manager.reset_buffer_filetypes()")
-    call s:c.Py("UltiSnips_Manager.add_buffer_filetypes('" . &ft . "')")
-    return ""
-endfunction
-
-function! UltiSnips_AddSnippet(trigger, value, descr, options, ...)
-    " Takes the same arguments as SnippetManager.add_snippet:
-    " (trigger, value, descr, options, ft = "all", globals = None)
-    call s:c.Py("args = vim.eval(\"a:000\")")
-    call s:c.Py("trigger = vim.eval(\"a:trigger\")")
-    call s:c.Py("value = vim.eval(\"a:value\")")
-    call s:c.Py("descr = vim.eval(\"a:descr\")")
-    call s:c.Py("options = vim.eval(\"a:options\")")
-    call s:c.Py("UltiSnips_Manager.add_snippet(trigger, value, descr, options, *args)")
-    return ""
-endfunction
-
-function! UltiSnips_Anon(value, ...)
-    " Takes the same arguments as SnippetManager.expand_anon:
-    " (value, trigger="", descr="", options="", globals = None)
-    call s:c.Py("args = vim.eval(\"a:000\")")
-    call s:c.Py("value = vim.eval(\"a:value\")")
-    call s:c.Py("UltiSnips_Manager.expand_anon(value, *args)")
-    return ""
-endfunction
-
 function! UltiSnips_MapKeys()
     " Map the keys correctly
     if g:UltiSnipsExpandTrigger == g:UltiSnipsJumpForwardTrigger
-
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips_ExpandSnippetOrJump()<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips_ExpandSnippetOrJump()<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#Setup('ExpandSnippetOrJump')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#Setup('ExpandSnippetOrJump')<cr>"
     else
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips_ExpandSnippet()<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips_ExpandSnippet()<cr>"
-        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips_JumpForwards()<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips_JumpForwards()<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#Setup('ExpandSnippet')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#Setup('ExpandSnippet')<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips#Setup('JumpForwards')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips#Setup('JumpForwards')<cr>"
     endif
-    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. ' :call UltiSnips_SaveLastVisualSelection()<cr>gvs'
-    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips_JumpBackwards()<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips_JumpBackwards()<cr>"
-    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips_ListSnippets()<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips_ListSnippets()<cr>"
+    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. " :call UltiSnips#Setup('SaveLastVisualSelection')<cr>gvs"
+    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips#Setup('JumpBackwards')<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips#Setup('JumpBackwards')<cr>"
+    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips#Setup('ListSnippets')<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips#Setup('ListSnippets')<cr>"
 
     snoremap <silent> <BS> <c-g>c
     snoremap <silent> <DEL> <c-g>c
     snoremap <silent> <c-h> <c-g>c
 endf
 
-function! UltiSnips_CursorMoved()
-    call s:c.Py("UltiSnips_Manager.cursor_moved()")
-endf
-function! UltiSnips_EnteredInsertMode()
-    call s:c.Py("UltiSnips_Manager.entered_insert_mode()")
-endf
-function! UltiSnips_LeavingBuffer()
-    call s:c.Py("UltiSnips_Manager.leaving_buffer()")
-endf
-" }}}
-
-"" STARTUP CODE {{{
-
-" Expand our path
-call s:c.Py("import vim, os, sys")
-call s:c.Py("sys.path.append(\"".escape(expand("<sfile>:h"),'"')."\")")
-call s:c.Py("from UltiSnips import UltiSnips_Manager")
-call s:c.Py("UltiSnips_Manager.expand_trigger = vim.eval('g:UltiSnipsExpandTrigger')")
-call s:c.Py("UltiSnips_Manager.forward_trigger = vim.eval('g:UltiSnipsJumpForwardTrigger')")
-call s:c.Py("UltiSnips_Manager.backward_trigger = vim.eval('g:UltiSnipsJumpBackwardTrigger')")
-
-au CursorMovedI * call UltiSnips_CursorMoved()
-au CursorMoved * call UltiSnips_CursorMoved()
-au BufLeave * call UltiSnips_LeavingBuffer()
-
 call UltiSnips_MapKeys()
 
-let did_UltiSnips_vim=1
-
-" }}}
 " vim: ts=8 sts=4 sw=4 expandtab

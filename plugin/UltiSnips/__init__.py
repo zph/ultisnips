@@ -40,6 +40,7 @@ class _SnippetDictionary(object):
         self.reset()
 
     def add_snippet(self, s, fn=None):
+	print "added"
         if fn:
             self._snippets.append(s)
 

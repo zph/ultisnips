@@ -1,3 +1,15 @@
+version 2.3:
+	- No more UltiSnipsNoPythonWarning setting. Warning only happens when
+	  you use UltiSnippets
+	- settings use this style now:
+		g:UltiSnips[...] 
+	  However the old g:UltiSnips{..} style is still supported
+	- g:UsePythonVersion is deprecated, assign PyCommand instead.
+	   probably it'll be supported forever ..
+	- drop the au command UltiSnips_Curs* VimL functions. directly cal
+	  python, LeavingBuffer was not EnteredInsertMode was not used at all.
+ 
+
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
 	- Matchit support for snippet files.
