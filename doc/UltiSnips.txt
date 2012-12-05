@@ -70,41 +70,16 @@ http://www.sirver.net/blog/2012/03/31/fourth-episode-of-ultisnips-screencast/
 1.1 Requirements                                     *UltiSnips-requirements*
 ----------------
 
-This plugin works with Vim version 7.0 or later.
+Vim >= 7.0
+python Vim >= 2.6, builtin: tested with 2.7 and 3.2, see |+python| |+python3|
 
-This plugin requires python >= 2.6. It has been specifically tested using
-python 2.7 and python 3.2 but should theoretically work on all versions of
-python >= 2.6.
-
-The Python 2.x or Python 3.x interface must be available. In other words, Vim
-must be compiled with either the |+python| feature or the |+python3| feature.
-The following commands show how to test if you have python compiled in Vim.
-They print '1' if the python version is compiled in, '0' if not.
-
-Test if Vim is compiled with python version 2.x: >
-    :echo has("python")
-The python version Vim is linked agains can be found with: >
-    :py import sys; print(sys.version)
-
-Test if Vim is compiled with python version 3.x: >
-    :echo has("python3")
-The python version Vim is linked agains can be found with: >
-    :py3 import sys; print(sys.version)
+Any of these lines should print the python version, then you're fine: >
+  :py import sys; print(sys.version)
+  :py3 import sys; print(sys.version)
+>
 
 Note that Vim is maybe not using your system wide installed python version, so
 make sure to check the Python version inside of Vim.
-
-UltiSnips attempts to autodetect which python version is compiled into Vim.
-Unfortunately, in some versions of Vim this detection does not work.
-In that case you have to explicitly tell UltiSnips which version to use using
-the 'UltiSnipsUsePythonVersion' global variable.
-
-To use python version 2.x: >
-   let g:UltiSnipsUsePythonVersion = 2
-
-To use python version 3.x: >
-   let g:UltiSnipsUsePythonVersion = 3
-
 
 1.2 Acknowledgments                               *UltiSnips-acknowledgments*
 -------------------
