@@ -74,9 +74,10 @@ to new configuration style (move it below
 
 - Can a snippet reference others?
 
-
 - implement Snipmates completion feature if you type only some chars such as
   bb<tab> should display all snippets startingh with bb ?
+
+- think about what todo with extends feature. See change implementation
 
 ==== plugin/snipMate_compatibility.vim
 	If people use it they should be using teir own code or put this into their .vimrc

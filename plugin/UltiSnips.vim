@@ -32,7 +32,37 @@ let s:c['RemoveSelectModeMappings'] = get(s:c, 'RemoveSelectModeMappings', 1)
 let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
 
 " A list of directory names that are searched for snippets.
-let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )
+" Why is this necessary?
+" let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )
+
+" Which snippet files to use ? {{{1
+" The default implementation is written in VimL and called
+" SnippetFilesForCurrentCurrentExpansionDefaultImplementation
+" if you want to customize it just assign your own function
+" If you want to do it in python call it from within a Vim function
+" This way you can do both: define it lazily and call it
+let s:c.SnippetFilesForCurrentCurrentExpansion = get(s:c, 'SnippetFiles', 'UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation' )
+
+" The default implementation first gathers all .snippet files found in any
+" location matching such a glob pattern: &runtimepath/UltiSnips/*.snippets
+" Thus any plugin in your &runtimepath can provide snippets.
+" Then the the list of all snippet files is filtered by a regex below only
+" keeping the snippets files you want. If you want to to use your own snippets
+" only use such assign this to ft_filter:
+" { 'default': '[._]vim/FILETYPE\.snippets' }
+" the [._]vim/ will match your ~/.vim folder
+" FILETYPE will be replaced by &ft
+" In the html case a simple \%(html\|javascript\) would have worked, but
+" there would have been no option to define some order
+"
+" The default ft_filter dictionary will match html and javascript snippet
+" files when editing html files.
+let s:c.ft_filter = get(s:c, 'ft_filter', {
+            \ 'default' : ['/FILETYPE\.snippets$'],
+            \ 'html'    : ['/html\.snippets$', '/javascript\.snippets$'],
+            \ })
+" }}}
+
 
 " UltiSnipsEdit will use this variable to decide if a new window
 " is opened when editing. default is "normal", allowed are also
@@ -166,19 +196,19 @@ command! -nargs=1 UltiSnipsAddFiletypes :call UltiSnipsAddFiletypes(<q-args>)
 function! UltiSnips_MapKeys()
     " Map the keys correctly
     if g:UltiSnipsExpandTrigger == g:UltiSnipsJumpForwardTrigger
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#Setup('ExpandSnippetOrJump')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#Setup('ExpandSnippetOrJump')<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
     else
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#Setup('ExpandSnippet')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#Setup('ExpandSnippet')<cr>"
-        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips#Setup('JumpForwards')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips#Setup('JumpForwards')<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#SetupM('','expand()')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#SetupM('', 'expand()')<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
     endif
-    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. " :call UltiSnips#Setup('SaveLastVisualSelection')<cr>gvs"
-    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips#Setup('JumpBackwards')<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips#Setup('JumpBackwards')<cr>"
-    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips#Setup('ListSnippets')<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips#Setup('ListSnippets')<cr>"
+    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. " :call UltiSnips#SetupM('','save_last_visual_selection()')<cr>gvs"
+    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
+    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips#SetupM('', 'list_snippets()')<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips#SetupM('', 'list_snippets()')<cr>"
 
     snoremap <silent> <BS> <c-g>c
     snoremap <silent> <DEL> <c-g>c

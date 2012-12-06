@@ -1,4 +1,8 @@
 version 2.3:
+	- NOTE: Some refactoring has taken place. Some things may be broken.
+	  If you're hit by such an issue revert to an older version and tell
+	  us to fix it.
+
 	- No more UltiSnipsNoPythonWarning setting. Warning only happens when
 	  you use UltiSnippets
 	- settings use this style now:
@@ -8,7 +12,25 @@ version 2.3:
 	   probably it'll be supported forever ..
 	- drop the au command UltiSnips_Curs* VimL functions. directly cal
 	  python, LeavingBuffer was not EnteredInsertMode was not used at all.
- 
+	- drop file_to_edit, it will be reimplemented in VimL, cause its a
+	  personal thing
+	- drop load_snippets_for. It'll be rewritten
+	- drop _needs_update, everything will be cached in the future
+	- drop _ensure_loaded
+	- drop _ensure_all_loaded
+	- drop reset_buffer_filetypes, 
+	  drop add_buffer_filetypes
+	  they will no longer be needed
+	- drop SnippetDirectories, you'll be able to configure snippet sources
+	  yourself
+	- SnippetDirectories - what for? drop it. If you want to choose the
+	  snippet files yourself - then write your own function
+	- introduce ft_filter and SnippetFilesForCurrentCurrentExpansion
+	  configuration options which you can use to select snippets easily.
+	  If this doesn't fit your needs, just assign your own function or
+	  provide a python implementation
+	- drop clear_snippets
+
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*

@@ -262,40 +262,37 @@ alternative function IMAP_Jumpfunc('', 0) is called.
 3.3 Snippet Search Path                       *UltiSnips-snippet-search-path*
 -----------------------
 
-UltiSnips snippet definition files are stored in one or more directories.
-There are several variables used to indicate those directories and define how
-UltiSnips loads snippets.
+There are several ways you can hook into UltiSnips process gathering snippet
+files.
 
-Snippet definition files are stored in snippet directories. A snippet
-directory must be a subdirectory of a directory defined in the 'runtimepath'
-option. The variable g:UltiSnipsSnippetDirectories defines a list of names
-used for snippet directories. The default is shown below. >
+1) python's UltiSnips_Manager.snippet_sources is called by the manager
+  for each snippet expansion.
+  If you want you can patch this function directly. Its default implementation
+  just calls 2) turning snippet filenames into SnippetFileCache objects.
 
+  Each object returned by this function must have a 'def snippets' method.
+
+2) Vim'L g:UltiSnips.SnippetFilesForCurrentCurrentExpansion
+  function assigment. The default implementation is
+  UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation
+  However you can just assign your own function and do whatever you want.
+
+  The default implementation finds all UltiSnips/*.snippet files in all
+  &runtimepath files. Then a filetype specific regular expression filter is
+  applied letting you choose both:
+  - multiple filetypes
+  - some plugin root directories only
+  See plugin/UltiSnips.vim 's ft_filter setting.
+
+  TODO: think about snippet order
+
+  Historical note:
+  This option is no longer supported:
    g:UltiSnipsSnippetDirectories          ["UltiSnips"]
-
-UltiSnips will search each 'runtimepath' directory for the subdirectory names
-defined in g:UltiSnipsSnippetDirectories in the order they are defined. For
-example, if you keep your snippets in a .vim subdirectory called
-"mycoolsnippets" and you want to make use of the default snippets that come
-with UltiSnips, add the following to your vimrc file. >
-   let g:UltiSnipsSnippetDirectories=["UltiSnips", "mycoolsnippets"]
-If you do not want to use the snippets that come with UltiSnips, define the
-variable accordingly. >
-   let g:UltiSnipsSnippetDirectories=["mycoolsnippets"]
-
-UltiSnips searches in 'runtimepath' for snippet directories but traverses
-'runtimepath' in reverse order (last item first). If you would like to have
-UltiSnips traverse 'runtimepath' in the standard order, add this to your vimrc
-file: >
-   let g:UltiSnipsDontReverseSearchPath="1"
-
-By default, whenever a snippet expand is triggered, UltiSnips will check for
-modifications to the snippet file associated with the filetype and reload it
-if necessary. This behavior can be disabled as follows: >
-   let g:UltiSnipsDoHash=0
-
-|UltiSnips-adding-snippets| explains which files are parsed for a given filetype.
-
+  Ping us if you use it so that we can bring this feature back.
+  In the past it was introduced so that you can omit the snippets shipping
+  with UltiSnips. However snippets will be split off, so there is no longer
+  any reason to have different directory names.
 
 3.4 Warning About Select Mode Mappings          *UltiSnips-warning-smappings*
 --------------------------------------

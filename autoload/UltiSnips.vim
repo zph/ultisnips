@@ -2,12 +2,14 @@ if !exists('g:UltiSnips') | let g:UltiSnips = {} | endif | let s:c = g:UltiSnips
 
 let s:did_setup = 0
 
-" lazily setup Ultisnip, then call function
-fun! UltiSnips#Setup(fun, ...)
+" <sfile> does not work inside functions :(
+let s:py_code = expand("<sfile>:h:h").'/py-code'
+
+fun! UltiSnips#Setup()
   if !s:did_setup
     " Expand our path
     call s:c.Py("import vim, os, sys")
-    call s:c.Py("sys.path.append(\"".escape(expand("<sfile>:h:h"),'"')."\")")
+    call s:c.Py("sys.path.append(\"".escape(s:py_code,'"')."\")")
     call s:c.Py("from UltiSnips import UltiSnips_Manager")
     call s:c.Py("UltiSnips_Manager.expand_trigger = vim.eval('g:UltiSnipsExpandTrigger')")
     call s:c.Py("UltiSnips_Manager.forward_trigger = vim.eval('g:UltiSnipsJumpForwardTrigger')")
@@ -20,13 +22,49 @@ fun! UltiSnips#Setup(fun, ...)
 
     let s:did_setup = 1
   endif
-
-  return call(a:fun_, a:000)
 endf
+
+" lazily setup Ultisnip, then dispatch action to python's UltiSnips_Manager
+" instance
+" Allow calling CompensateForPUM for those actions requiring it
+fun! UltiSnips#SetupM(c, s)
+  call UltiSnips#Setup()
+  if a:s == 'c'
+    call CompensateForPUM()
+  endif
+  call s:c.Py("UltiSnips_Manager.".a:s)
+  return ""
+endf
+" fun! UltiSnips#SetupV(fun, ...)
+"   call UltiSnips#Setup()
+"   return call('UltiSnips#'.a:fun, a:000)
+" endf
 
 " }}}
 
-function! CompensateForPUM()
+fun! UltiSnips#SnippetFilesByRuntimepath()
+  let files = []
+  for dir in split(&runtimepath,',')
+    call extend(files, split(glob(dir.'/UltiSnips/*.snippets'),"\n"))
+  endfor
+  return files
+endf
+
+" default implementation. If you don't like it you can override it
+" (or use your own python implemenation, see SnippetFilesForCurrentCurrentExpansion
+" configuration option
+fun! UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation(filetype)
+  let files = UltiSnips#SnippetFilesByRuntimepath()
+  let result = []
+  for filter in get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
+    let filter = substitute(filter,'FILETYPE', &filetype ,'')
+    " for windows replace \ by / before matching against regex
+    call extend(result, filter(copy(files), 'substitute(v:val, "\\\\","/","g")=~ filter'))
+  endfor
+  return result
+endf
+
+fun! CompensateForPUM()
     """ The CursorMovedI event is not triggered while the popup-menu is visible,
     """ and it's by this event that UltiSnips updates its vim-state. The fix is
     """ to explicitly check for the presence of the popup menu, and update
@@ -34,38 +72,6 @@ function! CompensateForPUM()
     if pumvisible()
         call s:c.Py("UltiSnips_Manager.cursor_moved()")
     endif
-endfunction
-function! UltiSnips#ExpandSnippet()
-    call s:c.Py("UltiSnips_Manager.expand()")
-    return ""
-endfunction
-
-function! UltiSnips#ExpandSnippetOrJump()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.expand_or_jump()")
-    return ""
-endfunction
-
-function! UltiSnips#ListSnippets()
-    call s:c.Py("UltiSnips_Manager.list_snippets()")
-    return ""
-endfunction
-
-function! UltiSnips#SaveLastVisualSelection()
-    call s:c.Py("UltiSnips_Manager.save_last_visual_selection()")
-    return ""
-endfunction
-
-function! UltiSnips#JumpBackwards()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.jump_backwards()")
-    return ""
-endfunction
-
-function! UltiSnips#JumpForwards()
-    call CompensateForPUM()
-    call s:c.Py("UltiSnips_Manager.jump_forwards()")
-    return ""
 endfunction
 
 function! UltiSnips#FileTypeChanged()
@@ -89,3 +95,4 @@ function! UltiSnips#Anon(...)
 endfunction
 " }}}
 
+" vim: ts=8 sts=4 sw=4 expandtab
