@@ -41,21 +41,18 @@ endf
 " endf
 
 " }}}
-fun! UltiSnips#SnippetFilesByRuntimepath()
-  let files = []
-  for dir in split(&runtimepath,',')
-    call extend(files, split(glob(dir.'/UltiSnips/*.snippets'),"\n"))
-  endfor
-  return files
-endf
+
+" editing snippets {{{
 
 " craete a list of files which could be valid snippet files according to
 " ft_filter. Its used by UltiSnips#ChooseSnippetFileToEditDefaultImplementation()
-fun! UltiSnips#SnippetFilesByRuntimepathEditable(filetype)
+fun! UltiSnips#SnippetFilesByRuntimepathEditable(type_dir, filetype)
   let result = []
 
-  let ft_filter = get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
-  for r in map(split(&rtp, ","), 'v:val . "/UltiSnips"')
+  let d = s:c[a:type_dir.type .'_ft_filter']
+  let ft_filter = get(d, a:filetype, d.default)
+
+  for r in map(split(&rtp, ","), 'v:val . "/'.(a:type_dir.dir).'"')
     if has_key(ft_filter, 'dir-regex') && !substitute(fnamemodify(r,':h'), "\\", "/", "g") =~ ft_filter['dir-regex']
       continue
     endif
@@ -73,7 +70,10 @@ fun! UltiSnips#ChooseSnippetFileToEditDefaultImplementation(filetype)
           throw "you're missing tlib library"
   endtry
 
-  let files = UltiSnips#SnippetFilesByRuntimepathEditable(a:filetype)
+  let files = []
+  for type_dir in [ {'type': 'UltiSnips', 'dir' : 'UltiSnips'}, {'type': 'snipmate', 'dir' : 'snippets'} ]
+      call extend(files, UltiSnips#SnippetFilesByRuntimepathEditable(type_dir, a:filetype))
+  endfor
 
   let exists = map(filter(copy(files), 'filereadable(v:val)'), '"exists:".v:val')
   let notExists = map(filter(copy(files), '!filereadable(v:val)'), '"does not exist yet:".v:val')
@@ -86,23 +86,47 @@ fun! UltiSnips#ChooseSnippetFileToEditDefaultImplementation(filetype)
   endfor
 endf
 
+" }}}
+
+
+" default implementation finding snippets {{{1
+
+fun! UltiSnips#SnippetFilesByRuntimepath(dir)
+  let files = []
+  for dir in split(&runtimepath,',')
+    call extend(files, split(glob(dir.'/'.a:dir.'/*.snippets'),"\n"))
+  endfor
+  return files
+endf
+
 " default implementation. If you don't like it you can override it
 " (or use your own python implemenation, see SnippetFilesForCurrentCurrentExpansion
 " configuration option
+" returns such:
+" {'snipmate': [ 'foo.snippets', 'bar.snippets' ], 'UltiSnips' : ['z.snippets'] }
+" depending on filetype and (snipmate|UltiSnips)_ft_filter configuration
+" setting
 fun! UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation(filetype)
-  let files = UltiSnips#SnippetFilesByRuntimepath()
-  let ft_filter = get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
+  let result = {}
+  for type_dir in [ {'type': 'UltiSnips', 'dir' : 'UltiSnips'}, {'type': 'snipmate', 'dir' : 'snippets'} ]
+      let files = UltiSnips#SnippetFilesByRuntimepath(type_dir.dir)
+      let d = s:c[type_dir.type .'_ft_filter']
+      let ft_filter = get(d, a:filetype, d.default)
 
-  let filetypes = map(copy(get(ft_filter, 'filetypes', ['FILETYPE'])), 'substitute(v:val, "FILETYPE", a:filetype,"g")')
+      let filetypes = map(copy(get(ft_filter, 'filetypes', ['FILETYPE'])), 'substitute(v:val, "FILETYPE", a:filetype,"g")')
 
-  " filetype filter
-  let files = filter(copy(files), 'index(filetypes, fnamemodify(v:val, ":t:r")) != -1')
-  " directory filter
-  if has_key(ft_filter, 'dir-regex')
-    call filter(files, 'substitute(fnamemodify(v:val, ":h"), "\\", "/", "g") =~ ft_filter["dir-regex"]')
-  endif
-  return files
+      " filetype filter
+      let files = filter(copy(files), 'index(filetypes, fnamemodify(v:val, ":t:r")) != -1')
+      " directory filter
+      if has_key(ft_filter, 'dir-regex')
+        call filter(files, 'substitute(fnamemodify(v:val, ":h"), "\\", "/", "g") =~ ft_filter["dir-regex"]')
+      endif
+      let result[type_dir.type] = files
+  endfor
+  return result
 endf
+
+" }}}
 
 fun! CompensateForPUM()
     """ The CursorMovedI event is not triggered while the popup-menu is visible,

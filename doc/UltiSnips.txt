@@ -286,11 +286,28 @@ files.
   your runtimepath.
    >
   let g:UltiSnips = {}
-  let g:UltiSnips.ft_filter = {
+  let g:UltiSnips.UltiSnips_ft_filter = {
      \ 'html'  : {'filetypes': ["html", "javascript"], 'dir-regex': '[._]vim$' },
      \ 'default' : {'filetypes': ["FILETYPE"] },
   \ }
-<
+
+
+Making UltiSnips read snipmate files only ~
+  The same can be done for snipmate_ft_filter to use snipmate snippets
+  The default is to not load snipmate snippets. To make Vim read only snipmate
+  snippets add this to your .vimrc: >
+
+    let g:UltiSnips = {}
+    let g:UltiSnips.snipmate_ft_filter = {
+                \ 'default' : {'filetypes': ["FILETYPE"] },
+                \ 'html'    : {'filetypes': ["html", "javascript"] },
+                \ }
+
+    " don't load snipmate snippets by default
+    let g:UltiSnips.UltiSnips_ft_filter = {
+                \ 'default' : {'filetypes': [] },
+                \ }
+
   Historical note: ~
   This option is no longer supported:
    g:UltiSnipsSnippetDirectories          ["UltiSnips"]

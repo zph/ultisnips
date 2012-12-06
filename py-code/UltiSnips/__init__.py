@@ -8,6 +8,7 @@ import hashlib
 import os
 import re
 import traceback
+import vim
 
 from UltiSnips.compatibility import as_unicode, byte2col
 from UltiSnips._diff import diff, guess_edit
@@ -94,8 +95,9 @@ Following is the full stack trace:
 #         return locals()
 #     extends = property(**extends())
 
+
 class _SnippetsFileParser(object):
-    def __init__(self, ft, fn, snip_manager, file_data=None):
+    def __init__(self, ft, fn, snip_manager, file_data=None, type_ = "UltiSnips"):
         self._sm = snip_manager # only the _error function is used of the manager
         self._ft = ft
         self._fn = fn
@@ -105,6 +107,16 @@ class _SnippetsFileParser(object):
             self._lines = open(fn).readlines()
         else:
             self._lines = file_data.splitlines(True)
+
+        # TODO: add debugging - maybe it just works
+        if (type_ == "snipmate"):
+            # convert to UltiSnips format
+            import UltiSnips.snipmate
+            self._lines = UltiSnips.snipmate.convert_snippet_lines(fn, self._lines).splitlines(True)
+            # vim.command("sp %s.converted" % fn)
+            # vim.current.buffer.append("%d" % len(self._lines))
+            # vim.current.buffer.append(self._lines)
+            # vim.command("set hidden | q")
 
         self._idx = 0
 
@@ -199,7 +211,7 @@ class _SnippetsFileParser(object):
                 self._globals[trig] = []
             self._globals[trig].append(cv)
         elif snip == "snippet":
-            self.snippets.append( Snippet(trig, cv, desc, opts, globals or {}) )
+            self.snippets.append( Snippet(trig, cv, desc, opts, globals() or {}) )
         else:
             self._error("Invalid snippet type: '%s'" % snip)
 
@@ -501,13 +513,14 @@ class VimState(object):
 
 # a container representing the snippets found in a file
 class SnippetFileCache(object):
-    def __init__(self, filename):
+    def __init__(self, filename, _type):
         self.filename = filename
+        self._type = _type
 
     # if the file timestamp has changed reload the file
     def parse(self, mtime):
         ft = os.path.basename(self.filename).split(".")[0]
-        p = _SnippetsFileParser(ft, self.filename, UltiSnips_Manager, None)
+        p = _SnippetsFileParser(ft, self.filename, UltiSnips_Manager, None, self._type)
         p.parse()
         self._snippets = p.snippets
         self.mtime = mtime
@@ -818,11 +831,15 @@ class SnippetManager(object):
         # list of snippets
         list = []
 
-        snippet_files = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentCurrentExpansion, [&filetype])')
-        for file in snippet_files:
-            if not file in self.snippet_file_cache:
-                self.snippet_file_cache[file] = SnippetFileCache(file)
-            list.append(self.snippet_file_cache[file])
+        snippet_files_by_type = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentCurrentExpansion, [&filetype])')
+
+        # allow UltiSnips overriding snipmate : TODO which order is correct?
+        for type_ in ["UltiSnips", "snipmate"]:
+            if type_ in snippet_files_by_type:
+                for file in snippet_files_by_type[type_]:
+                    if not file in self.snippet_file_cache:
+                        self.snippet_file_cache[file] = SnippetFileCache(file, type_)
+                    list.append(self.snippet_file_cache[file])
         # TODO: add additional snippet sources
         # TODO: allow post processing?
         return list
@@ -941,6 +958,13 @@ class SnippetManager(object):
         """
         return self._filetypes[_vim.buf.nr][0]
 
+    def debug_snippets(self):
+        sources = self.snippet_sources()
+        # vim.command('sp snippets-names')
+        for ss in sources:
+            for snippet in ss.snippets():
+                print snippet
+                # vim.current.buffer.append(snippet.__repr__)
 
 
 UltiSnips_Manager = SnippetManager()

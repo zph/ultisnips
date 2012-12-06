@@ -54,9 +54,14 @@ let s:c.ChooseSnippetFileToEdit = get(s:c, 'SnippetFiles', 'UltiSnips#ChooseSnip
 " { 'default': {'filetypes': ["FILETYPE"], 'dir-regex': '[._]vim/UltiSnips$' } }
 " FILETYPE will be replaced by &filetype. 'default' key is used if no filetype
 " specific filter is set.
-let s:c.ft_filter = get(s:c, 'ft_filter', {
+let s:c.UltiSnips_ft_filter = get(s:c, 'UltiSnips_ft_filter', {
             \ 'default' : {'filetypes': ["FILETYPE"] },
             \ 'html'    : {'filetypes': ["html", "javascript"] },
+            \ })
+
+" don't load snipmate snippets by default
+let s:c.snipmate_ft_filter = get(s:c, 'snipmate_ft_filter', {
+            \ 'default' : {'filetypes': [] },
             \ })
 " }}}
 
@@ -168,6 +173,7 @@ function! UltiSnipsAddFiletypes(filetypes)
     return ""
 endfunction
 command! -nargs=1 UltiSnipsAddFiletypes :call UltiSnipsAddFiletypes(<q-args>)
+command! -nargs=0 UltiSnipsDebugSnippets :call UltiSnips#SetupM('', 'debug_snippets()')
 
 "" }}}
 
