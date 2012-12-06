@@ -278,15 +278,20 @@ files.
   However you can just assign your own function and do whatever you want.
 
   The default implementation finds all UltiSnips/*.snippet files in all
-  &runtimepath files. Then a filetype specific regular expression filter is
-  applied letting you choose both:
-  - multiple filetypes
-  - some plugin root directories only
-  See plugin/UltiSnips.vim 's ft_filter setting.
-
-  TODO: think about snippet order
-
-  Historical note:
+  &runtimepath files. Then a filetype specific filter is applied which is
+  defined by the ft_filter setting. Its best explained by an customized
+  example which in the html case selects html and javascript files only in
+  your $HOME/[._]vim/ directory. For languages you don't have a rule set
+  use all filetype specific snippet files provided by all plugins found in
+  your runtimepath.
+   >
+  let g:UltiSnips = {}
+  let g:UltiSnips.ft_filter = {
+     \ 'html'  : {'filetypes': ["html", "javascript"], 'dir-regex': '[._]vim$' },
+     \ 'default' : {'filetypes': ["FILETYPE"] },
+  \ }
+<
+  Historical note: ~
   This option is no longer supported:
    g:UltiSnipsSnippetDirectories          ["UltiSnips"]
   Ping us if you use it so that we can bring this feature back.

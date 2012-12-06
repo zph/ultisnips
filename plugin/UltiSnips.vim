@@ -43,23 +43,20 @@ let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
 " This way you can do both: define it lazily and call it
 let s:c.SnippetFilesForCurrentCurrentExpansion = get(s:c, 'SnippetFiles', 'UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation' )
 
+let s:c.ChooseSnippetFileToEdit = get(s:c, 'SnippetFiles', 'UltiSnips#ChooseSnippetFileToEditDefaultImplementation' )
+
 " The default implementation first gathers all .snippet files found in any
 " location matching such a glob pattern: &runtimepath/UltiSnips/*.snippets
 " Thus any plugin in your &runtimepath can provide snippets.
-" Then the the list of all snippet files is filtered by a regex below only
-" keeping the snippets files you want. If you want to to use your own snippets
-" only use such assign this to ft_filter:
-" { 'default': '[._]vim/FILETYPE\.snippets' }
-" the [._]vim/ will match your ~/.vim folder
-" FILETYPE will be replaced by &ft
-" In the html case a simple \%(html\|javascript\) would have worked, but
-" there would have been no option to define some order
-"
-" The default ft_filter dictionary will match html and javascript snippet
-" files when editing html files.
+" Then the the list of all snippet files is filtered by filetype and regular
+" expression matching the directory of the file. This way you can easily
+" choose to use your own snippets only by setting ft_filter to this:
+" { 'default': {'filetypes': ["FILETYPE"], 'dir-regex': '[._]vim/UltiSnips$' } }
+" FILETYPE will be replaced by &filetype. 'default' key is used if no filetype
+" specific filter is set.
 let s:c.ft_filter = get(s:c, 'ft_filter', {
-            \ 'default' : ['/FILETYPE\.snippets$'],
-            \ 'html'    : ['/html\.snippets$', '/javascript\.snippets$'],
+            \ 'default' : {'filetypes': ["FILETYPE"] },
+            \ 'html'    : {'filetypes': ["html", "javascript"] },
             \ })
 " }}}
 
@@ -161,28 +158,9 @@ endf
 " }}}
 
 " Global Commands {{{
-function! UltiSnipsEdit(...)
-    if a:0 == 1 && a:1 != ''
-        let type = a:1
-    else
-	call 
-        call s:c.Py("vim.command(\"let type = '%s'\" % UltiSnips_Manager.primary_filetype)")
-    endif
-    call s:c.Py("vim.command(\"let file = '%s'\" % UltiSnips_Manager.file_to_edit(vim.eval(\"type\")))")
-
-    let mode = 'e'
-    if exists('g:UltiSnipsEditSplit')
-        if g:UltiSnipsEditSplit == 'vertical'
-            let mode = 'vs'
-        elseif g:UltiSnipsEditSplit == 'horizontal'
-            let mode = 'sp'
-        endif
-    endif
-    exe ':'.mode.' '.file
-endfunction
 
 " edit snippets, default of current file type or the specified type
-command! -nargs=? UltiSnipsEdit :call UltiSnipsEdit(<q-args>)
+command! -nargs=? UltiSnipsEdit :call call(s:c.ChooseSnippetFileToEdit,[<q-args>])
 
 " Global Commands {{{
 function! UltiSnipsAddFiletypes(filetypes)

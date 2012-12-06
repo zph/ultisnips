@@ -41,7 +41,6 @@ endf
 " endf
 
 " }}}
-
 fun! UltiSnips#SnippetFilesByRuntimepath()
   let files = []
   for dir in split(&runtimepath,',')
@@ -50,18 +49,59 @@ fun! UltiSnips#SnippetFilesByRuntimepath()
   return files
 endf
 
+" craete a list of files which could be valid snippet files according to
+" ft_filter. Its used by UltiSnips#ChooseSnippetFileToEditDefaultImplementation()
+fun! UltiSnips#SnippetFilesByRuntimepathEditable(filetype)
+  let result = []
+
+  let ft_filter = get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
+  for r in map(split(&rtp, ","), 'v:val . "/UltiSnips"')
+    if has_key(ft_filter, 'dir-regex') && !substitute(fnamemodify(r,':h'), "\\", "/", "g") =~ ft_filter['dir-regex']
+      continue
+    endif
+    let filetypes = map(copy(get(ft_filter, 'filetypes', ['FILETYPE'])), 'substitute(v:val, "FILETYPE", &filetype,"g")')
+    call extend(result, map(filetypes, 'r."/".v:val.".snippets"'))
+  endfor
+  return result
+endf
+
+" this requires tlib
+fun! UltiSnips#ChooseSnippetFileToEditDefaultImplementation(filetype)
+  try
+          call tlib#input#List('mi', '', [])
+  catch /.*/
+          throw "you're missing tlib library"
+  endtry
+
+  let files = UltiSnips#SnippetFilesByRuntimepathEditable(a:filetype)
+
+  let exists = map(filter(copy(files), 'filereadable(v:val)'), '"exists:".v:val')
+  let notExists = map(filter(copy(files), '!filereadable(v:val)'), '"does not exist yet:".v:val')
+
+  let all = exists + notExists
+  let select = tlib#input#List('mi', 'select files to be opened in splits', all)
+  " TODO: honor EditSplit
+  for idx in select
+    exec 'sp '.fnameescape(substitute(all[idx - 1], '[^:]*:','',''))
+  endfor
+endf
+
 " default implementation. If you don't like it you can override it
 " (or use your own python implemenation, see SnippetFilesForCurrentCurrentExpansion
 " configuration option
 fun! UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation(filetype)
   let files = UltiSnips#SnippetFilesByRuntimepath()
-  let result = []
-  for filter in get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
-    let filter = substitute(filter,'FILETYPE', &filetype ,'')
-    " for windows replace \ by / before matching against regex
-    call extend(result, filter(copy(files), 'substitute(v:val, "\\\\","/","g")=~ filter'))
-  endfor
-  return result
+  let ft_filter = get(s:c.ft_filter, a:filetype, s:c.ft_filter.default)
+
+  let filetypes = map(copy(get(ft_filter, 'filetypes', ['FILETYPE'])), 'substitute(v:val, "FILETYPE", a:filetype,"g")')
+
+  " filetype filter
+  let files = filter(copy(files), 'index(filetypes, fnamemodify(v:val, ":t:r")) != -1')
+  " directory filter
+  if has_key(ft_filter, 'dir-regex')
+    call filter(files, 'substitute(fnamemodify(v:val, ":h"), "\\", "/", "g") =~ ft_filter["dir-regex"]')
+  endif
+  return files
 endf
 
 fun! CompensateForPUM()

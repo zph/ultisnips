@@ -30,7 +30,8 @@ version 2.3:
 	  If this doesn't fit your needs, just assign your own function or
 	  provide a python implementation
 	- drop clear_snippets
-
+	- UltiSnipsEdit now provides a tlib based list matching ft_filter -
+	  existing files are shown first
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
