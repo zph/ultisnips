@@ -1276,6 +1276,9 @@ Thank you for your support.
 =============================================================================
 8. For Snipmate Users                            *UltiSnips-for-snipmate-users*
 
+file snipmate related bugs against github.com/MarcWeber/UltiSnips until
+changes are merged upstream.
+
 This is a preview and details may/will change. However due to my limited time it
 may be the case that this intermediary version is the one to be used for
 SnipMate users for quite a while :( I just made it work for me right now.
