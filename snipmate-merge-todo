@@ -4,6 +4,13 @@
 - I have not yet run the testsuite, expanding snippets and UltiSnips works for
   me
 
+- colorize placeholders:
+   1st red
+  2nd green
+  3rd ..
+  
+  Then you know ahead of time where the cursor will jump to.
+
 - create a list about what is new to Snipmate users.
   Eg try
   bbox<tab> to get a fealing
