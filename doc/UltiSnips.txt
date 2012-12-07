@@ -39,6 +39,8 @@ UltiSnips                                      *snippet* *snippets* *UltiSnips*
    7.1 Patches & Coding                         |UltiSnips-contricoding|
    7.2 Snippets                                 |UltiSnips-contrisnippets|
 
+8. For Snipmate Users |UltiSnips-for-snipmate-users|
+
 This plugin only works if 'compatible' is not set.
 {Vi does not have any of these features}
 {only available when |+python| or |+python3| have been enabled at compile time}
@@ -283,30 +285,20 @@ files.
   example which in the html case selects html and javascript files only in
   your $HOME/[._]vim/ directory. For languages you don't have a rule set
   use all filetype specific snippet files provided by all plugins found in
-  your runtimepath.
+  your runtimepath. xml snippets will be discarded
    >
   let g:UltiSnips = {}
   let g:UltiSnips.UltiSnips_ft_filter = {
      \ 'html'  : {'filetypes': ["html", "javascript"], 'dir-regex': '[._]vim$' },
+     \ 'xml'  : {'filetypes': []},
      \ 'default' : {'filetypes': ["FILETYPE"] },
   \ }
-
-
-Making UltiSnips read snipmate files only ~
-  The same can be done for snipmate_ft_filter to use snipmate snippets
-  The default is to not load snipmate snippets. To make Vim read only snipmate
-  snippets add this to your .vimrc: >
-
-    let g:UltiSnips = {}
-    let g:UltiSnips.snipmate_ft_filter = {
-                \ 'default' : {'filetypes': ["FILETYPE"] },
-                \ 'html'    : {'filetypes': ["html", "javascript"] },
-                \ }
-
-    " don't load snipmate snippets by default
-    let g:UltiSnips.UltiSnips_ft_filter = {
-                \ 'default' : {'filetypes': [] },
-                \ }
+< For snipmate snippets the same can be done, the default is to ignore all
+  Snipmate snippets: >
+  let g:UltiSnips.snipmate_ft_filter = {
+            \ 'default' : {'filetypes': [] },
+   \ }
+< Snipmate users: See notes at |UltiSnips-for-snipmate-users|
 
   Historical note: ~
   This option is no longer supported:
@@ -1279,5 +1271,44 @@ Contributors listed in chronological order:
    Øystein Walle (osse)
 
 Thank you for your support.
+
+
+=============================================================================
+8. For Snipmate Users                            *UltiSnips-for-snipmate-users*
+
+This is a preview and details may/will change. However due to my limited time it
+may be the case that this intermediary version is the one to be used for
+SnipMate users for quite a while :( I just made it work for me right now.
+
+differences:
+- <tab> completion triggering popup menu does not yet work, you can type some
+  char and us the list-snippets mapping instead
+- Filename function has been dropped. If you need such code, add it yourself,
+  or ask us to readd it as autoload function.
+- UltiSnipsEdit is being used to open snippet files.
+
+Making UltiSnips read snipmate files only ~
+  The same can be done for snipmate_ft_filter to use snipmate snippets
+  The default is to not load snipmate snippets. To make Vim read only snipmate
+  snippets add this to your .vimrc: >
+
+    let g:UltiSnips = {}
+    let g:UltiSnips.InterfaceFlavour = "SnipMate"
+    let g:UltiSnips.snipmate_ft_filter = {
+                \ 'default' : {'filetypes': ["FILETYPE"] },
+                \ 'html'    : {'filetypes': ["html", "javascript"] },
+                \ }
+
+    " don't load snipmate snippets by default
+    let g:UltiSnips.UltiSnips_ft_filter = {
+                \ 'default' : {'filetypes': [] },
+                \ }
+
+If you think the automatic conversion to UltiSnips fails you can debug the
+process by uncommenting the lines followed by
+  "sp %s.converted"
+in py-code/UltiSnips/__init__.py
+
+New features, eg try this: bbox<tab> (Damn, I broke it .. TODO)
 
 vim:tw=78:ts=8:ft=help:norl:

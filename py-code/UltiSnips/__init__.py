@@ -327,6 +327,7 @@ class Snippet(object):
         elif "i" in self._opts:
             match = words.endswith(self._t)
         else:
+            # match = self._t.startswith(words)
             match = (words == self._t)
 
         # By default, we match the whole trigger

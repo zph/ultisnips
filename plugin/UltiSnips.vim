@@ -122,9 +122,9 @@ endfor
 
 " be compatible to code, assign all keys to global dictionaries (the code
 " should be patched in the long run .., so this will go away)
-for [k,v] in items(s:c)
-    let g:{'UltiSnips'.k} = v
-    unlet k v
+for [k, V] in items(s:c)
+    let g:{'UltiSnips'.k} = V
+    unlet k V
 endfor
 
 " run py command

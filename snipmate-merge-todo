@@ -1,32 +1,28 @@
+- I broke bbox (probably all which needs to be done is adding them to
+  snipmate_sources)
+
+- I have not yet run the testsuite, expanding snippets and UltiSnips works for
+  me
+
 - create a list about what is new to Snipmate users.
   Eg try
   bbox<tab> to get a fealing
-
-- document new option InterfaceFlavour
 
 - extract pieces such as  (long term)
   - markers
   - select python, talk to python
   - ...
 
-- implement filetype specific configuration like this:
-    let s:c.ft = get(s:c, 'use_shipped_filetypes', {})
-    let s:c.ft.php = get(s:c.ft, 'php', ['*'])
-    let s:c.ft.xml = get(s:c.ft, 'xml', ['UltiSnips'])
-    let s:c.ft.javascript = get(s:c.ft, 'xml', ['*'])
-
-
 - think about how to extract tcomment's filetype detection
   so that you get js completion in haml files in js sections etc.
 
-- keep thing working, thus keep snipmate as is but add big warnings that
-  users should switch to UltiSnips
+  Rather rewrrite and start a new plugin
+
+- snipmate will not be turned into something it isn't, so don't touch it.
 
 - think about how to keep the feature that snippets can be patched and
   duplicated so that versions with and without markers can be used without
   redundancy
-
-- introduce SnipmateOpenSnippetFiles command
 
 - wait for Holger Rapp to split snippets into its own repository, so that that
   can be merged with snipmate-snippets
@@ -78,6 +74,9 @@ to new configuration style (move it below
   bb<tab> should display all snippets startingh with bb ?
 
 - think about what todo with extends feature. See change implementation
+
+- the <tab> completion triggers completion popup is missing. Probbably getting
+  this working is little bit more work ..
 
 ==== plugin/snipMate_compatibility.vim
 	If people use it they should be using teir own code or put this into their .vimrc
