@@ -100,13 +100,13 @@ fun! UltiSnips#SnippetFilesByRuntimepath(dir)
 endf
 
 " default implementation. If you don't like it you can override it
-" (or use your own python implemenation, see SnippetFilesForCurrentCurrentExpansion
+" (or use your own python implemenation, see SnippetFilesForCurrentExpansion
 " configuration option
 " returns such:
 " {'snipmate': [ 'foo.snippets', 'bar.snippets' ], 'UltiSnips' : ['z.snippets'] }
 " depending on filetype and (snipmate|UltiSnips)_ft_filter configuration
 " setting
-fun! UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation(filetype)
+fun! UltiSnips#SnippetFilesForCurrentExpansionDefaultImplementation(filetype)
   let result = {}
   for type_dir in [ {'type': 'UltiSnips', 'dir' : 'UltiSnips'}, {'type': 'snipmate', 'dir' : 'snippets'} ]
       let files = UltiSnips#SnippetFilesByRuntimepath(type_dir.dir)

@@ -37,11 +37,11 @@ let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
 
 " Which snippet files to use ? {{{1
 " The default implementation is written in VimL and called
-" SnippetFilesForCurrentCurrentExpansionDefaultImplementation
+" SnippetFilesForCurrentExpansionDefaultImplementation
 " if you want to customize it just assign your own function
 " If you want to do it in python call it from within a Vim function
 " This way you can do both: define it lazily and call it
-let s:c.SnippetFilesForCurrentCurrentExpansion = get(s:c, 'SnippetFiles', 'UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation' )
+let s:c.SnippetFilesForCurrentExpansion = get(s:c, 'SnippetFiles', 'UltiSnips#SnippetFilesForCurrentExpansionDefaultImplementation' )
 
 let s:c.ChooseSnippetFileToEdit = get(s:c, 'SnippetFiles', 'UltiSnips#ChooseSnippetFileToEditDefaultImplementation' )
 

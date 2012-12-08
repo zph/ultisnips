@@ -274,9 +274,9 @@ files.
 
   Each object returned by this function must have a 'def snippets' method.
 
-2) Vim'L g:UltiSnips.SnippetFilesForCurrentCurrentExpansion
+2) Vim'L g:UltiSnips.SnippetFilesForCurrentExpansion
   function assigment. The default implementation is
-  UltiSnips#SnippetFilesForCurrentCurrentExpansionDefaultImplementation
+  UltiSnips#SnippetFilesForCurrentExpansionDefaultImplementation
   However you can just assign your own function and do whatever you want.
 
   The default implementation finds all UltiSnips/*.snippet files in all

@@ -25,7 +25,7 @@ version 2.3:
 	  yourself
 	- SnippetDirectories - what for? drop it. If you want to choose the
 	  snippet files yourself - then write your own function
-	- introduce ft_filter and SnippetFilesForCurrentCurrentExpansion
+	- introduce ft_filter and SnippetFilesForCurrentExpansion
 	  configuration options which you can use to select snippets easily.
 	  If this doesn't fit your needs, just assign your own function or
 	  provide a python implementation

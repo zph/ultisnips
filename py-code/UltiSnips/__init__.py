@@ -832,7 +832,7 @@ class SnippetManager(object):
         # list of snippets
         list = []
 
-        snippet_files_by_type = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentCurrentExpansion, [&filetype])')
+        snippet_files_by_type = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentExpansion, [&filetype])')
 
         # allow UltiSnips overriding snipmate : TODO which order is correct?
         for type_ in ["UltiSnips", "snipmate"]:
