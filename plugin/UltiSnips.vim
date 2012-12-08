@@ -55,8 +55,8 @@ let s:c.ChooseSnippetFileToEdit = get(s:c, 'SnippetFiles', 'UltiSnips#ChooseSnip
 " FILETYPE will be replaced by &filetype. 'default' key is used if no filetype
 " specific filter is set.
 let s:c.UltiSnips_ft_filter = get(s:c, 'UltiSnips_ft_filter', {
-            \ 'default' : {'filetypes': ["FILETYPE"] },
-            \ 'html'    : {'filetypes': ["html", "javascript"] },
+            \ 'default' : {'filetypes': ["all", "FILETYPE"] },
+            \ 'html'    : {'filetypes': ["all", "html", "javascript"] },
             \ })
 
 " don't load snipmate snippets by default
