@@ -130,7 +130,6 @@ class _SnippetsFileParser(object):
     def _show_lines(self):
         if (self._type == "snipmate" and not self._snipmate_lines_shown):
             vim.command("sp %s" % self._fn)
-            vim.current.buffer.append("%d" % len(self._lines))
             vim.current.buffer.append(self._lines)
             vim.command("set hidden | q")
             self._snipmate_lines_shown = True
