@@ -227,7 +227,7 @@ class _SnippetsFileParser(object):
                 self._globals[trig] = []
             self._globals[trig].append(cv)
         elif snip == "snippet":
-            self.snippets.append( Snippet(trig, cv, desc, opts, globals() or {}, self._fn) )
+            self.snippets.append( Snippet(trig, cv, desc, opts, self._globals, self._fn) )
         else:
             self._error("Invalid snippet type: '%s'" % snip)
 
