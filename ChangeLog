@@ -36,6 +36,8 @@ version 2.3:
 	- show location hint in case there are multiple snippets having the
 	  same name like this: "src: path filetype"
 	  when having to select a snippet
+	- allow wrapping around 0 tabstop, ideally there would be a <m-x>
+	  mapping to jump to tabstop x (TODO)
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
