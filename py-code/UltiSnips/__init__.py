@@ -115,14 +115,15 @@ class _SnippetsFileParser(object):
         if (self._type == "snipmate"):
             # convert to UltiSnips format
             import UltiSnips.snipmate
-            self._fn = "%s.converted" % self._fn
             [s, errors] = UltiSnips.snipmate.convert_snippet_lines(self._fn, self._lines)
             self._lines = s.splitlines(True)
 
             if len(errors) > 0:
                 self._show_lines()
                 for e in errors:
+                    e['text'] += ' while converting to UltiSnips format'
                     self._error_fun(e)
+            self._fn = "%s.converted" % self._fn
 
         self._idx = 0
 

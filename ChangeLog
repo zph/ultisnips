@@ -32,6 +32,7 @@ version 2.3:
 	- drop clear_snippets
 	- UltiSnipsEdit now provides a tlib based list matching ft_filter -
 	  existing files are shown first
+	- parsing errors show in quickfix
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
