@@ -228,7 +228,7 @@ class _SnippetsFileParser(object):
                 self._globals[trig] = []
             self._globals[trig].append(cv)
         elif snip == "snippet":
-            self.snippets.append( Snippet(trig, cv, desc, opts, globals() or {}) )
+            self.snippets.append( Snippet(trig, cv, desc, opts, globals() or {}, self._fn) )
         else:
             self._error("Invalid snippet type: '%s'" % snip)
 
@@ -265,7 +265,8 @@ class Snippet(object):
     _INDENT = re.compile(r"^[ \t]*")
     _TABS = re.compile(r"^\t*")
 
-    def __init__(self, trigger, value, descr, options, globals):
+    def __init__(self, trigger, value, descr, options, globals, _fn = ""):
+        self._fn = _fn
         self._t = as_unicode(trigger)
         self._v = as_unicode(value)
         self._d = as_unicode(descr)
@@ -276,6 +277,9 @@ class Snippet(object):
 
     def __repr__(self):
         return "Snippet(%s,%s,%s)" % (self._t,self._d,self._opts)
+
+    def location_hint(self):
+        return re.sub('.*[\\/]([^\\/]*)[\\/](UltiSnips|snippets).(.*)\.snippets(\.converted)?', '\\1 \\3', self._fn)
 
     def _words_for_line(self, before, num_words=None):
         """ Gets the final num_words words from before.
@@ -914,7 +918,7 @@ class SnippetManager(object):
         want to use, and return it.
         """
         # make a python list
-        display = [ as_unicode("%i: %s") % (i+1,s.description) for i,s in enumerate(snippets)]
+        display = [ as_unicode("%i: %s from:%s") % (i+1, s.description, s.location_hint) for i,s in enumerate(snippets)]
 
         try:
             rv = _vim.eval("inputlist(%s)" % _vim.escape(display))

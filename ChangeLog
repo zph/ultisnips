@@ -33,6 +33,9 @@ version 2.3:
 	- UltiSnipsEdit now provides a tlib based list matching ft_filter -
 	  existing files are shown first
 	- parsing errors show in quickfix
+	- show location hint in case there are multiple snippets having the
+	  same name like this: "src: path filetype"
+	  when having to select a snippet
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
