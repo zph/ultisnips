@@ -1,8 +1,4 @@
-- I broke bbox (probably all which needs to be done is adding them to
-  snipmate_sources)
-
-- I have not yet run the testsuite, expanding snippets and UltiSnips works for
-  me
+- run the test suite
 
 - colorize placeholders:
    1st red
@@ -39,12 +35,6 @@
 - think about refactoring plugin/* beacuse that directory should only
   contain code which get loaded on each startup. It should only contain the
   interface declaration. Everything else should be moved to autoload or such
-
-- adopt
-g:UltiSnipsUsePythonVersion
-g:UltiSnipsNoPythonWarning
-
-to new configuration style (move it below 
 
 - think about whether to keep the plugin already sourced guard.
   It always annoys me.
