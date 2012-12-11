@@ -9,6 +9,7 @@ import os
 import re
 import traceback
 import vim
+import sys
 
 from UltiSnips.compatibility import as_unicode, byte2col
 from UltiSnips._diff import diff, guess_edit
@@ -97,11 +98,13 @@ Following is the full stack trace:
 
 
 class _SnippetsFileParser(object):
-    def __init__(self, ft, fn, snip_manager, file_data=None, type_ = "UltiSnips"):
-        self._sm = snip_manager # only the _error function is used of the manager
+    def __init__(self, ft, fn, error_fun, file_data=None, type_ = "UltiSnips"):
+        self._error_fun = error_fun # only the _error function is used of the manager
         self._ft = ft
         self._fn = fn
         self._globals = {}
+        self._type = type_
+        self._snipmate_lines_shown = False
         self.snippets = []
         if file_data is None:
             self._lines = open(fn).readlines()
@@ -109,20 +112,33 @@ class _SnippetsFileParser(object):
             self._lines = file_data.splitlines(True)
 
         # TODO: add debugging - maybe it just works
-        if (type_ == "snipmate"):
+        if (self._type == "snipmate"):
             # convert to UltiSnips format
             import UltiSnips.snipmate
-            self._lines = UltiSnips.snipmate.convert_snippet_lines(fn, self._lines).splitlines(True)
-            # vim.command("sp %s.converted" % fn)
-            # vim.current.buffer.append("%d" % len(self._lines))
-            # vim.current.buffer.append(self._lines)
-            # vim.command("set hidden | q")
+            self._fn = "%s.converted" % self._fn
+            [s, errors] = UltiSnips.snipmate.convert_snippet_lines(self._fn, self._lines)
+            self._lines = s.splitlines(True)
+
+            if len(errors) > 0:
+                self._show_lines()
+                for e in errors:
+                    self._error_fun(e)
 
         self._idx = 0
 
+    def _show_lines(self):
+        if (self._type == "snipmate" and not self._snipmate_lines_shown):
+            vim.command("sp %s" % self._fn)
+            vim.current.buffer.append("%d" % len(self._lines))
+            vim.current.buffer.append(self._lines)
+            vim.command("set hidden | q")
+            self._snipmate_lines_shown = True
+
+
     def _error(self, msg):
-        fn = _vim.eval("""fnamemodify(%s, ":~:.")""" % _vim.escape(self._fn))
-        self._sm._error("%s in %s(%d)" % (msg, fn, self._idx + 1))
+        self._error_fun( {'filename': self._fn, 'lnum': self._idx + 1, 'text' : msg})
+
+        self._show_lines()
 
     def _line(self):
         if self._idx < len(self._lines):
@@ -229,7 +245,7 @@ class _SnippetsFileParser(object):
                     # be detected?
                     for e in tail.split(','):
                         filename = os.path.join(os.path.dirname(self._fn), "%s.snippets" % e.strip())
-                        p = _SnippetsFileParser(self._ft, filename, self._sm, None)
+                        p = _SnippetsFileParser(self._ft, filename, self._sm.snippet_error, None)
                         self.snippets.extend(p.snippets)
                 else:
                     self._error("'extends' without file types")
@@ -517,11 +533,10 @@ class SnippetFileCache(object):
     def __init__(self, filename, _type):
         self.filename = filename
         self._type = _type
-
     # if the file timestamp has changed reload the file
     def parse(self, mtime):
         ft = os.path.basename(self.filename).split(".")[0]
-        p = _SnippetsFileParser(ft, self.filename, UltiSnips_Manager, None, self._type)
+        p = _SnippetsFileParser(ft, self.filename, UltiSnips_Manager.snippet_error, None, self._type)
         p.parse()
         self._snippets = p.snippets
         self.mtime = mtime
@@ -535,11 +550,19 @@ class SnippetFileCache(object):
 
 
 class SnippetManager(object):
+
     def __init__(self):
         self._supertab_keys = None
         self._csnippets = []
         self.snippet_file_cache = {}
+        self._errors = []
         self.reset()
+
+    def snippet_error(self, err):
+        assert type(err) == type({})
+        for x in [ 'filename', 'lnum', 'text' ]:
+            assert x in err
+        self._errors.append(err)
 
     @err_to_scratch_buffer
     def reset(self, test_error=False):
@@ -843,6 +866,9 @@ class SnippetManager(object):
                     list.append(self.snippet_file_cache[file])
         # TODO: add additional snippet sources
         # TODO: allow post processing?
+
+        # now if we have errors tell the user by populating quickfix or error list
+
         return list
 
     def _snips(self, before, possible):
@@ -850,6 +876,8 @@ class SnippetManager(object):
         before the cursor. If possible is True, then get all
         possible matches.
         """
+        self._errors = []
+
 
         found_snippets = []
         method = "could_match" if possible else "matches"
@@ -870,6 +898,13 @@ class SnippetManager(object):
         selected_snippets = set([item for sublist in snippets.values() for item in sublist])
         # Return snippets to their original order
         snippets = [snip for snip in found_snippets if snip in selected_snippets]
+
+
+        if len(self._errors) > 0:
+            # quoting should be accurate enough hopefully ..
+            print >> sys.stderr, "There are snippet errors, use cope to show them %d" % len(self._errors)
+            vim.command('call setqflist(%s)' % self._errors)
+            # vim.command('cope')
 
         return snippets
 
@@ -949,7 +984,7 @@ class SnippetManager(object):
 
     # def _parse_snippets(self, ft, fn, file_data=None):
     #     self.add_snippet_file(ft, fn)
-    #     _SnippetsFileParser(ft, fn, self, file_data).parse()
+    #     _SnippetsFileParser(ft, fn, self.snippet_error, file_data).parse()
 
     @property
     def primary_filetype(self):

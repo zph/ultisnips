@@ -13,7 +13,10 @@ sys.path.append(os.paith.join(os.path.dirname(__file__), "py-code")
 import UltiSnips.snipmate
 
 def convert_snippet_file(source):
-    UltiSnips.snipmate.convert_snippet_lines(source, open(source).readlines())
+    [result, errs] = UltiSnips.snipmate.convert_snippet_lines(source, open(source).readlines())
+    for e in errs:
+        print >> sys.stderr, e
+    return result
 
 def convert_snippet(source):
     " One file per snippet "

@@ -7,6 +7,8 @@ import os
 def convert_snippet_contents(content):
     " If the snippet contains snipmate style substitutions, convert them to ultisnips style "
     content = re.sub("`([^`]+`)", "`!v \g<1>", content)
+    # content = re.sub("\${[0-9]:([^}]*)}", lambda x: x.group(0).replace('\\','\\\\'), content)
+    content = re.sub("\${[0-9]:([^}]*)}", lambda x: x.group(0).replace('\\',''), content)
     return content
 
 # convert a snipmate .snippet lines to UltiSnips
@@ -14,7 +16,14 @@ def convert_snippet_lines(name, lines):
     " One file per filetype "
     retval = ""
     state = 0
+    line_nr = 0
+    errors = []
     for line in lines:
+        line_nr += 1
+
+        def err(msg):
+            errors.append({'filename': name, 'lnum': line_nr, 'text' : msg})
+
         # Ignore empty lines
         if line.strip() == "":
             continue
@@ -24,7 +33,7 @@ def convert_snippet_lines(name, lines):
             if line[:8] == "snippet ":
                 snippet_info = re.match("(\S+)\s*(.*)", line[8:])
                 if not snippet_info:
-                    print >> sys.stderr, "Warning: Malformed snippet\n %s:%s\n" % (name, line)
+                    err("Warning: Malformed snippet")
                     continue
                 retval += 'snippet %s "%s"' % (snippet_info.group(1), snippet_info.group(2) if snippet_info.group(2) else snippet_info.group(1)) + "\n"
                 state = 1
@@ -36,7 +45,7 @@ def convert_snippet_lines(name, lines):
             # First line of snippet: Get indentation
             whitespace = re.search("^\s+", line)
             if not whitespace:
-                print >> sys.stderr, "Warning: Malformed snippet, content not indented.\n"
+                err("Warning: Malformed snippet, content not indented.")
                 retval += "endsnippet\n\n"
                 state = 0
             else:
@@ -53,7 +62,7 @@ def convert_snippet_lines(name, lines):
                 if line[:8] == "snippet ":
                     snippet_info = re.match("(\S+)\s*(.*)", line[8:])
                     if not snippet_info:
-                        print >> sys.stderr, "Warning: Malformed snippet\n %s\n" % line
+                        err("Warning: Malformed snippet")
                         continue
                     retval += 'snippet %s "%s"' % (snippet_info.group(1), snippet_info.group(2) if snippet_info.group(2) else snippet_info.group(1)) + "\n"
                     state = 1
@@ -63,4 +72,4 @@ def convert_snippet_lines(name, lines):
                     state = 0
     if state == 2:
         retval += convert_snippet_contents(snippet) + "endsnippet\n\n"
-    return retval
+    return [retval, errors]
