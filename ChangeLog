@@ -38,6 +38,11 @@ version 2.3:
 	  when having to select a snippet
 	- allow wrapping around 0 tabstop, ideally there would be a <m-x>
 	  mapping to jump to tabstop x (TODO)
+	- neue option debug_snipmate_conversion
+	- if there is no expansion possible after non alphanumeric characters
+	  such as ([ such as in "if (CURSOR" retry as if "if (" was not there
+	  forcing word boundary match
+
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*

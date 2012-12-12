@@ -75,6 +75,8 @@ let s:c['EditSplit'] = get(s:c, 'EditSplit', "normal" )
 " values: UltiSnips or Snipmate
 let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
 
+let s:c['debug_snipmate_conversion'] = get(s:c, 'debug_snipmate_conversion', 0)
+
 " select python version, be backward compatible
 " in the future just set PyCommand yourself
 if exists('g:UsePythonVersion')

@@ -125,6 +125,9 @@ class _SnippetsFileParser(object):
                     self._error_fun(e)
             self._fn = "%s.converted" % self._fn
 
+            if vim.eval('g:UltiSnips.debug_snipmate_conversion') == 1:
+                self._show_lines()
+
         self._idx = 0
 
     def _show_lines(self):
@@ -967,6 +970,11 @@ class SnippetManager(object):
         snippets = self._snips(before, False)
 
         if not snippets:
+            # retry with word boundary
+            snippets = self._snips(re.sub("^.*[^a-zA-Z0-9]+", "", before), False)
+
+        if not snippets:
+
             # No snippet found
             return False
         elif len(snippets) == 1:
