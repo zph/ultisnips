@@ -1,3 +1,11 @@
+- sample php
+  if<tab> yields\
+  if (CURSOR)
+      code
+
+  now I want to use a snippet like nin (not is_null($1)) at CURSOR, then
+  continue at code, how do I do this?
+
 - run the test suite
 
 - uniq var names!
