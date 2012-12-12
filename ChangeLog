@@ -45,7 +45,8 @@ version 3beta:
 	- if there is no expansion possible after non alphanumeric characters
 	  such as ([ such as in "if (CURSOR" retry as if "if (" was not there
 	  forcing word boundary match
-
+	  Maybe snipmate.py should always add 'w' modifier instead?
+	  Why bother about adding w? Things should just work by default
 
 version 2.2:
 	- Support to silence Python-not-found warnings. *UltiSnips-python-warning*
