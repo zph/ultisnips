@@ -182,19 +182,19 @@ command! -nargs=0 UltiSnipsDebugSnippets :call UltiSnips#SetupM('', 'debug_snipp
 function! UltiSnips_MapKeys()
     " Map the keys correctly
     if g:UltiSnipsExpandTrigger == g:UltiSnipsJumpForwardTrigger
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
+        exec "inoremap <silent> " . s:c.ExpandTrigger . " <C-R>=UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
+        exec "snoremap <silent> " . s:c.ExpandTrigger . " <Esc>:call UltiSnips#SetupM('c', 'expand_or_jump()')<cr>"
     else
-        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#SetupM('','expand()')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#SetupM('', 'expand()')<cr>"
-        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
-        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
+        exec "inoremap <silent> " . s:c.ExpandTrigger . " <C-R>=UltiSnips#SetupM('','expand()')<cr>"
+        exec "snoremap <silent> " . s:c.ExpandTrigger . " <Esc>:call UltiSnips#SetupM('', 'expand()')<cr>"
+        exec "inoremap <silent> " . s:c.JumpForwardTrigger  . " <C-R>=UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
+        exec "snoremap <silent> " . s:c.JumpForwardTrigger  . " <Esc>:call UltiSnips#SetupM('c', 'jump_forwards()')<cr>"
     endif
-    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. " :call UltiSnips#SetupM('','save_last_visual_selection()')<cr>gvs"
-    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
-    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips#SetupM('', 'list_snippets()')<cr>"
-    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips#SetupM('', 'list_snippets()')<cr>"
+    exec 'xnoremap ' . s:c.ExpandTrigger. " :call UltiSnips#SetupM('','save_last_visual_selection()')<cr>gvs"
+    exec "inoremap <silent> " . s:c.JumpBackwardTrigger . " <C-R>=UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
+    exec "snoremap <silent> " . s:c.JumpBackwardTrigger . " <Esc>:call UltiSnips#SetupM('c', 'jump_backwards()')<cr>"
+    exec "inoremap <silent> " . s:c.ListSnippets . " <C-R>=UltiSnips#SetupM('', 'list_snippets()')<cr>"
+    exec "snoremap <silent> " . s:c.ListSnippets . " <Esc>:call UltiSnips#SetupM('', 'list_snippets()')<cr>"
 
     snoremap <silent> <BS> <c-g>c
     snoremap <silent> <DEL> <c-g>c
