@@ -31,6 +31,10 @@ let s:c['RemoveSelectModeMappings'] = get(s:c, 'RemoveSelectModeMappings', 1)
 " If UltiSnips should remove Mappings, which should be ignored
 let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
 
+" If the expand key doesn't trigger any snippet, show completion menu with
+" possible matches? Eg foo will be completed to foobar snippet name then
+let s:c['CompletionMenu'] = get(s:c, 'CompletionMenu', 1)
+
 " A list of directory names that are searched for snippets.
 " Why is this necessary?
 " let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )

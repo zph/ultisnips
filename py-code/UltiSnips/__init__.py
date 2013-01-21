@@ -10,6 +10,7 @@ import re
 import traceback
 import vim
 import sys
+import json
 
 from UltiSnips.compatibility import as_unicode, byte2col
 from UltiSnips._diff import diff, guess_edit
@@ -586,24 +587,24 @@ class SnippetManager(object):
 
     @err_to_scratch_buffer
     def jump_forwards(self):
-        _vim.command("let g:ulti_jump_forwards_res = 1")
-        if not self._jump():
-            _vim.command("let g:ulti_jump_forwards_res = 0")
+        rv = self._jump()
+        if rv == "ultisnips_action_none":
             return self._handle_failure(self.forward_trigger)
+        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def jump_backwards(self):
-        _vim.command("let g:ulti_jump_backwards_res = 1")
-        if not self._jump(True):
-            _vim.command("let g:ulti_jump_backwards_res = 0")
+        rv = self._jump(True)
+        if rv == "ultisnips_action_none":
             return self._handle_failure(self.backward_trigger)
+        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def expand(self):
-        _vim.command("let g:ulti_expand_res = 1")
-        if not self._try_expand():
-            _vim.command("let g:ulti_expand_res = 0")
+        rv = self._try_expand()
+        if rv == "ultisnips_action_none":
             self._handle_failure(self.expand_trigger)
+        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def list_snippets(self):
@@ -632,14 +633,12 @@ class SnippetManager(object):
         expansion and forward jumping. It first tries to expand a snippet, if
         this fails, it tries to jump forward.
         """
-        _vim.command('let g:ulti_expand_or_jump_res = 1')
         rv = self._try_expand()
-        if not rv:
-            _vim.command('let g:ulti_expand_or_jump_res = 2')
+        if  rv == "ultilsnips_action_none":
             rv = self._jump()
-        if not rv:
-            _vim.command('let g:ulti_expand_or_jump_res = 0')
+        if rv == "ultilsnips_action_none":
             self._handle_failure(self.expand_trigger)
+        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def save_last_visual_selection(self):
@@ -800,7 +799,7 @@ class SnippetManager(object):
         self._csnippets.pop()
 
     def _jump(self, backwards = False):
-        jumped = False
+        jumped = "ultilsnips_action_none"
         if self._cs:
             self._ctab = self._cs.select_next_tab(backwards)
             if self._ctab:
@@ -813,7 +812,7 @@ class SnippetManager(object):
                             _vim.text_to_vim(Position(lineno,0), Position(
                                 lineno,len(before)+len(after)), m.group(1))
                 _vim.select(self._ctab.start, self._ctab.end)
-                jumped = True
+                jumped = "ultisnips_action_jumped"
                 if self._ctab.no == 0:
                     self._current_snippet_is_done()
             else:
@@ -822,7 +821,7 @@ class SnippetManager(object):
                 # Cleanup by removing current snippet and recursing.
                 self._current_snippet_is_done()
                 jumped = self._jump(backwards)
-        if jumped:
+        if jumped == "ultisnips_action_jumped":
             self._vstate.remember_position()
         return jumped
 
@@ -910,7 +909,6 @@ class SnippetManager(object):
         if len(self._errors) > 0:
             # quoting should be accurate enough hopefully ..
             print >> sys.stderr, "There are snippet errors, use cope to show them %d" % len(self._errors)
-            import json
             vim.command('call setqflist(%s)' % json.dumps(self._errors))
             # vim.command('cope')
 
@@ -967,7 +965,7 @@ class SnippetManager(object):
     def _try_expand(self):
         before, after = _vim.buf.current_line_splitted
         if not before:
-            return False
+            return "ultisnips_action_none"
         snippets = self._snips(before, False)
 
         if not snippets:
@@ -975,19 +973,34 @@ class SnippetManager(object):
             snippets = self._snips(re.sub("^.*[^a-zA-Z0-9]+", "", before), False)
 
         if not snippets:
+            if vim.eval('g:UltiSnips.CompletionMenu'):
+                snippets = self._snips(before, True)
+                snippets.sort(key=lambda x: x.trigger)
+
+                if (len(snippets) > 0):
+                    # prepare completion items, pass to vim:
+                    completion_items = [ {'word': s.trigger[len(s._matched):], 'info': ("%s\nloc: %s" % (s.description, s.location_hint()))} for s in snippets ]
+                    vim.command('let g:UltiSnips.completionItems = %s' % json.dumps(completion_items))
+                    # call completion
+                    old = vim.eval('&l:omnifunc')
+                    vim.command("let &l:omnifunc = 'UltiSnips#CompleteSnippetTriggerFun'")
+                    vim.command("call feedkeys(\"\\<c-x>\\<c-o>\\<c-r>=UltiSnips#ResetOmniFunc(\\\"%s\\\")\\<cr>\",'n')" % old)
+                    return "ultilsnips_action_completion_menu"
 
             # No snippet found
-            return False
+            return "ultilsnips_action_none"
+
+
         elif len(snippets) == 1:
             snippet = snippets[0]
         else:
             snippet = self._ask_snippets(snippets)
             if not snippet:
-                return True
+                return "ultisnips_action_user_abort"
 
         self._do_snippet(snippet, before, after)
 
-        return True
+        return "ultisnips_action_expanded"
 
     @property
     def _cs(self):

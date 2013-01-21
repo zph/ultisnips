@@ -235,11 +235,18 @@ called a global variable is set that contains the corresponding return value
 of the corresponding function.
 
 The corresponding variables and functions are:
-UltiSnips_ExpandSnippet       --> g:ulti_expand_res (0: fail, 1: success)
-UltiSnips_ExpandSnippetOrJump --> g:ulti_expand_or_jump_res (0: fail,
-                                                    1: expand, 2: jump)
-UltiSnips_JumpForwards        --> g:ulti_jump_forwards_res (0: fail, 1: success)
-UltiSnips_JumpBackwards       --> g:ulti_jump_backwards_res (0: fail, 1: success)
+And g:UltiSnips.pyResult will contain the action which was taken, such as
+ultisnips_action_none
+
+UltiSnips_ExpandSnippet
+UltiSnips_ExpandSnippetOrJump
+UltiSnips_JumpForwards
+UltiSnips_JumpBackwards
+
+historical note: previously there were
+  g:ulti_expand_or_jump_res, g:ulti_jump_forwards_res, g:ulti_jump_backwards_res
+  which were set to 0,1,2 (which was bad style because it using ints is short
+  but hard for programmers. Be descriptive whenever possible)
 
 To see how these return values may come in handy suppose that you want to map
 a key to expand or jump, but if none of these actions is successful you want
@@ -248,15 +255,14 @@ this allows you individual fine tuning of your tab key usage.
 
 Usage is as follows: You define a function >
 
-   let g:ulti_expand_or_jump_res = 0 "default value, just set once
    function! Ulti_ExpandOrJump_and_getRes()
-     call UltiSnips_ExpandSnippetOrJump()
-     return g:ulti_expand_or_jump_res
+     call UltiSnips#SetupM('c', 'expand_or_jump()')
+     return g:UltiSnips.pyResult
    endfunction
 
 then you define your mapping as >
 
-   inoremap <NL> <C-R>=(Ulti_ExpandOrJump_and_getRes() > 0)?"":IMAP_Jumpfunc('', 0)<CR>
+   inoremap <NL> <C-R>=(Ulti_ExpandOrJump_and_getRes() == "ultisnips_action_none")?IMAP_Jumpfunc('', 0):""<CR>
 
 and if the you can't expand or jump from the current location then the
 alternative function IMAP_Jumpfunc('', 0) is called.

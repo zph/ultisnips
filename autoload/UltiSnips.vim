@@ -32,6 +32,7 @@ fun! UltiSnips#SetupM(c, s)
   if a:s == 'c'
     call CompensateForPUM()
   endif
+  let s:c.pyResult = ""
   call s:c.Py("UltiSnips_Manager.".a:s)
   return ""
 endf
@@ -158,5 +159,21 @@ function! UltiSnips#Anon(...)
     return ""
 endfunction
 " }}}
+
+fun! UltiSnips#CompleteSnippetTriggerFun(findstart, base)
+  if a:findstart
+      let g:a=787
+    return col('.')
+  else
+      let g:x=787
+    return s:c.completionItems
+  endif
+endf
+
+fun! UltiSnips#ResetOmniFunc(s)
+    let &l:omnifunc = a:s
+    redraw
+    return "\<c-n>\<c-p>"
+endf
 
 " vim: ts=8 sts=4 sw=4 expandtab
