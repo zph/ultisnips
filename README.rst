@@ -1,10 +1,20 @@
 UltiSnips
 =========
 
-This is the official repository for UltiSnips on GitHub. It is held in sync
-with the official bzr repository over at Launchpad [1] and is meant as a
-convenience for contributors. Send Pull request to this repository, not
-the automatic clone from vim-scripts.
+NOTE: Official repo: https://github.com/SirVer/ultisnips
+This is a fork. Previously this was the snipmate-merge branch.
+Using branch master so that people can install and give it a try more easily.
+The main author of UltiSnips knows about the fork. Its me not having time to
+update the test suite. That's preventing it from being merged upstream.
+
+New features:
+- snipmate like completion
+- snippet files are reloaded if timestamp changes
+- snipame snippet support (they are converted on the fly, if there are errors
+  the converted result is put into a bufffer and quickfix is populated)
+
+!! See comments at plugin/UltiSnips.vim 
+
 
 Note that we do not use the Issue tracker here one GitHub because the one on
 Launchpad is superior and already has a significant history. Please report
