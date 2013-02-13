@@ -24,7 +24,8 @@ CONTENTS:
 
 bugs:
 file against github.com/MarcWeber/ultisnips unless you're sure they also
-happen on the [parent_ultisnips] project.
+happen on the [parent_ultisnips] project. 
+Then use [SirVer's bugtracker]
 
 help:
 If in trouble read documentation. If you still have trouble you can contact me
@@ -129,3 +130,4 @@ vim:tw=78:ts=8:ft=help:norl:
 999. links
 
 [parent_ultisnips]: See README.rst
+[SirVer's bugtracker]: https://bugs.launchpad.net/ultisnips

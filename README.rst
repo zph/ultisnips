@@ -99,14 +99,5 @@ __ http://www.sirver.net/blog/2012/02/05/third-episode-of-ultisnips-screencast/
 __ http://www.sirver.net/blog/2012/03/31/fourth-episode-of-ultisnips-screencast/
 
 
-Links
-------
 .. _parent UltiSnips: http://github.com/SirVer/ultisnips
-which in turn is a mirror of http://launchpad.net/ultisnips
-
 .. _discussion about merge: https://github.com/garbas/vim-snipmate/issues/114
-
-Bug tracker of the original project:
-Note that we do not use the Issue tracker here one GitHub because the one on
-Launchpad is superior and already has a significant history. Please report
-.. _bug tracker of parent project: https://bugs.launchpad.net/ultisnips
