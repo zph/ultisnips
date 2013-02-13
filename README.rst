@@ -1,28 +1,86 @@
 UltiSnips
 =========
 
-NOTE: Official repo: https://github.com/SirVer/ultisnips
-This is a fork. Previously this was the snipmate-merge branch.
-Using branch master so that people can install and give it a try more easily.
-The main author of UltiSnips knows about the fork. Its me not having time to
-update the test suite. That's preventing it from being merged upstream.
+UltiSnips is a mature template library for Vim. Thus you can write code
+snippets once then refer to them by short words and make Vim expand them.
 
-New features:
-- snipmate like completion
-- snippet files are reloaded if timestamp changes
-- snipame snippet support (they are converted on the fly, if there are errors
-  the converted result is put into a bufffer and quickfix is populated)
-
-!! See comments at plugin/UltiSnips.vim 
+This is a fork of `parent UltiSnips`_ providing some additional features eg
+known from SnipMate
+- ability to read snipmate snippet files on the fly
+- snipmate like snippet completion
+- reloading snippets if snippet files timestamp changes
+- can read both: UltiSnip and snipmate snippet files on the fly
+See notes at "WHY forking" below.
 
 
-Note that we do not use the Issue tracker here one GitHub because the one on
-Launchpad is superior and already has a significant history. Please report
-`issues over there`_.
+documentation
+-------------
+doc/UltiSnips.txt
+  slightly adopted original documentation
+
+doc/UltiSnips-getting-started-quickly.txt
+  rewritten documentation focusing on the most important aspects to get started
+  quickly
+
+plugin/UltiSnips.vim:
+  code comments, should always be up to date
+
+
+installation
+-------------
+See doc/UltiSnips-Quickstart.txt
+
+BUGS
+----
+See doc/UltiSnips-Quickstart.txt
+
+WHY forking?
+-----------
+This work is based on the original repository `parent UltiSnips`_.
+
+What about feeding upstream?
+The author knows about the fork. Its me not having time to update the test
+suite - maybe I will never have. My goal is to provide value to me and the
+community using the time I have and merge UltiSnips and snipmate communities
+to maximize value for all parties.
+
+A snippet engine always has two aspects:
+a) the engine
+b) the snippets
+
+I know about XpTemplate, but it would have been too different.
+What about fixing snipmate? Would have been too much work.
+
+Also see some notes in snipmate-merge-todo.
+
+Also see `discussion about merge`_
+
+
+Comparison to other snipmate engines
+------------------------------------
+UltiSnips:
+    See WHY forking above.
+
+snipmate: (was abondoned by original author, Marc Weber and Rock Garbas kept
+          maintaining it for a while)
+          Current upstream is at github.com/garbas/vim-snipmate
+
+XpTemplate: full blown VimL only engine - but too different to convert snipmate
+          snippets to that format. It has some nice features, eg it can
+          abstract over different coding styles (spaces)
+
+neosnippets: 
+  https://github.com/Shougo/neosnippet/
+  I never used it. Its sead to be ablte to read snipmate snippets, too.
+
+
+There are some more snippet engines - but from my point of view they are not
+worth menthioning because they have significant less features (if you think
+differently let me know)
+
 
 [1] http://launchpad.net/ultisnips
 
-.. _issues over there: https://bugs.launchpad.net/ultisnips
 
 Screencasts
 -----------
@@ -41,3 +99,14 @@ __ http://www.sirver.net/blog/2012/02/05/third-episode-of-ultisnips-screencast/
 __ http://www.sirver.net/blog/2012/03/31/fourth-episode-of-ultisnips-screencast/
 
 
+Links
+------
+.. _parent UltiSnips: http://github.com/SirVer/ultisnips
+which in turn is a mirror of http://launchpad.net/ultisnips
+
+.. _discussion about merge: https://github.com/garbas/vim-snipmate/issues/114
+
+Bug tracker of the original project:
+Note that we do not use the Issue tracker here one GitHub because the one on
+Launchpad is superior and already has a significant history. Please report
+.. _bug tracker of parent project: https://bugs.launchpad.net/ultisnips

@@ -1,0 +1,131 @@
+*UltiSnips.txt*    For Vim version 7.0 or later.
+
+        The Ultimate Plugin for Snippets in Vim - forked version~
+
+
+Please also have a look at README.rst which talks about why this fork
+exists. Section 3 is most important
+
+CONTENTS:
+
+  1. Contact / need help / bugs
+  2. Installation
+  3. SETUP / CONFIGURATION / how does this fork work ?
+
+  10. More documentation
+
+  98a. Notes for snipmate users:
+  98b. Notes for UltiSnips users:
+
+  999. links
+
+==============================================================================
+1. Contact / need help / bugs
+
+bugs:
+file against github.com/MarcWeber/ultisnips unless you're sure they also
+happen on the [parent_ultisnips] project.
+
+help:
+If in trouble read documentation. If you still have trouble you can contact me
+by irc (MarcWeber @ irc.freenode.net) or mail: marco-oweber@gmx.de.
+Also See bugs at README.rst
+
+==============================================================================
+2. Installation
+
+I don't care. I personally prefer vim-addon-manager (cause I wrote it for good
+reasons), but all the other tools pathogen, vundle, .. should also get the job
+done.
+
+==============================================================================
+3. SETUP / CONFIGURATION / how does this fork work ?
+
+Which snippets are available? ~
+You implicitely tell UltiSnips which paths to look for snippets in.
+default implementation is a VimL function 
+called SnippetFilesForCurrentExpansionDefaultImplementation
+but you can also provide a python implementation instead.
+
+Snippet files are reloaded lazily as needed automatically (eg when timestamp of a
+snippet file changes). While loading snipmate snippets some errors may happen.
+Then quickfix is populated so that you can explore the cause fast (:cope).
+For details See doc/UltiSnips.txt section "3.3 Snippet Search Path".
+
+.vimrc setup ~
+  >
+    " declare global configuration dictionary so that config options can be added:
+    let g:UltiSnips = {}
+
+    " Use old snipmates default mappings (look them up in
+    " plugin/UltiSnips.vim)
+    " ExpandTrigger, ListSnippets, JumpForwardTrigger, JumpBackwardTrigger
+    " yourself. Eg use <c-j> to jump to next placeholder, which is UltiSnips
+    " default. It makes sense to use a different mapping so that you don't
+    " expand var names. in for loops if they also represent a snippet.
+    let g:UltiSnips.InterfaceFlavour = "SnipMate"
+    let g:UltiSnips.JumpForwardTrigger = "<c-j>"
+
+    " Now its time to tell UltiSnips about which snippets to load.
+    " You do so for snipmate snippets and UltiSnips snippets individually.
+    " This example illustrates a setup loading snipmate snippets.
+
+    " See plugin/UltiSnips.vim, it has much additional documentation.
+    " Assuming you're not overrding default implemenation the default
+    " VimL function SnippetFilesForCurrentExpansionDefaultImplementation
+
+
+    " == UltiSnips snippets ==
+    " Because I want to use the snippet snippets 'default' does not load
+    " filetype.snippets snippet files. 'all' reperesents the snippets like box
+    " which are meant to be present always. (snipmate was using _ for this)
+    " For cpp, already all snippets have been converted to UltiSnips, so use
+    " those - but only the one provided by my ~/.vim direcotry.
+    let g:UltiSnips.UltiSnips_ft_filter = {
+                \ 'default' : {'filetypes': ['all'] },
+                \ 'all' : {'filetypes': ['all'] },
+                \ 'cpp' : {'filetypes': ['cpp'], 'dir-regex': '[._]vim/UltiSnips$' },
+                \ }
+
+    " == snipmate snippets ==
+    " For any other filetype do what I used in the past: snipmate-snippets
+    " repo (must be added to runtimepath)
+    " _ represents snipmate snippets which are present always
+    let g:UltiSnips.snipmate_ft_filter = {
+                \ 'default' : {'filetypes': ["FILETYPE", "_"] },
+                \ 'html'    : {'filetypes': ["html", "javascript", "_"] },
+                \ 'cpp'    : {'filetypes': [] },
+                \ }
+
+    " Please mind that 
+
+
+==============================================================================
+10. More documentation
+
+See doc/UltiSnips.txt
+
+
+==============================================================================
+98a. Notes for snipmate users:
+_.snippets namespace (used always) is "all.snippets" namespace in UltiSnips.
+You can still keep using "_" as seen above.
+
+UltiSnips provides two different mappings for expand and jump to next
+placeholder. This is because an expansion name might be the same as a var
+name. So consider adopting to using two different mappings.
+
+Also be aware that UltiSnips snippets are more powerful. Eg nested
+placeholders are supported. See doc/UltiSnips.txt
+
+==============================================================================
+98b. Notes for UltiSnips users:
+Please read the comments about how snippets are found and loaded carefully.
+This changed.
+
+vim:tw=78:ts=8:ft=help:norl:
+
+==============================================================================
+999. links
+
+[parent_ultisnips]: See README.rst
