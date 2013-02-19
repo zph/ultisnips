@@ -6,10 +6,12 @@ snippets once then refer to them by short words and make Vim expand them.
 
 This is a fork of `parent UltiSnips`_ providing some additional features eg
 known from SnipMate
-- ability to read snipmate snippet files on the fly
-- snipmate like snippet completion
-- reloading snippets if snippet files timestamp changes
-- can read both: UltiSnip and snipmate snippet files on the fly
+
+  - ability to read snipmate snippet files on the fly
+  - snipmate like snippet completion
+  - reloading snippets if snippet files timestamp changes
+  - can read both: UltiSnip and snipmate snippet files on the fly
+
 See notes at "WHY forking" below.
 
 
@@ -18,7 +20,7 @@ documentation
 doc/UltiSnips.txt
   slightly adopted original documentation
 
-doc/UltiSnips-getting-started-quickly.txt
+doc/UltiSnips-Quickstart.txt
   rewritten documentation focusing on the most important aspects to get started
   quickly
 
