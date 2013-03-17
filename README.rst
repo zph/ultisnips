@@ -28,6 +28,10 @@ plugin/UltiSnips.vim:
   code comments, should always be up to date
 
 
+sample snippets
+---------------
+github.com/honza/snipmate-snippets -> UltiSnips directory (merge is in progress)
+
 installation
 -------------
 See doc/UltiSnips-Quickstart.txt
