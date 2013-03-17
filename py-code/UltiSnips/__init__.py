@@ -918,6 +918,9 @@ class SnippetManager(object):
         """ Given a list of snippets, ask the user which one they
         want to use, and return it.
         """
+        if vim.eval('g:UltiSnips.always_use_first_snippet') == 1:
+            return snippets[0]
+
         # make a python list
         display = [ as_unicode("%i: %s from:%s") % (i+1, s.description, s.location_hint()) for i,s in enumerate(snippets)]
 

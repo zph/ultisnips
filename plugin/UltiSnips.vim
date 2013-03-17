@@ -81,6 +81,12 @@ let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
 
 let s:c['debug_snipmate_conversion'] = get(s:c, 'debug_snipmate_conversion', 0)
 
+" If there are multiple snippets matching a trigger the first one will be
+" chosen always if you set this to 1. This is useful if you have both:
+" UltiSnips and snipmate-snippets - and want the UltiSnips snippets to take
+" precedence.
+let s:c['always_use_first_snippet'] = get(s:c, 'always_use_first_snippet', 0)
+
 " select python version, be backward compatible
 " in the future just set PyCommand yourself
 if exists('g:UsePythonVersion')

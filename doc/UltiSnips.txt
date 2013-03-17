@@ -1320,4 +1320,7 @@ in py-code/UltiSnips/__init__.py
 
 New features, eg try this: bbox<tab> (Damn, I broke it .. TODO)
 
+preferring UltiSnips snippets ~
+Set always_use_first_snippet to 1, UltiSnips snippets will be seen first.
+
 vim:tw=78:ts=8:ft=help:norl:
