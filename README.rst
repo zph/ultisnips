@@ -31,6 +31,7 @@ plugin/UltiSnips.vim:
 sample snippets
 ---------------
 github.com/honza/snipmate-snippets -> UltiSnips directory (merge is in progress)
+See installation
 
 installation
 -------------
