@@ -126,7 +126,7 @@ class _SnippetsFileParser(object):
                     self._error_fun(e)
             self._fn = "%s.converted" % self._fn
 
-            if vim.eval('g:UltiSnips.debug_snipmate_conversion') == 1:
+            if vim.eval('g:UltiSnips.debug_snipmate_conversion') == '1':
                 self._show_lines()
 
         self._idx = 0
@@ -918,7 +918,7 @@ class SnippetManager(object):
         """ Given a list of snippets, ask the user which one they
         want to use, and return it.
         """
-        if vim.eval('g:UltiSnips.always_use_first_snippet') == 1:
+        if vim.eval('g:UltiSnips.always_use_first_snippet') == '1':
             return snippets[0]
 
         # make a python list
