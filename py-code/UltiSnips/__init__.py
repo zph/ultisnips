@@ -846,15 +846,18 @@ class SnippetManager(object):
         for idx, sttrig in enumerate(self._supertab_keys):
             if trigger.lower() == sttrig.lower():
                 if idx == 0:
-                    feedkey= r"\<c-n>"
+                    feedkey= r"\<Plug>SuperTabForward"
+                    mode = "n"
                 elif idx == 1:
-                    feedkey = r"\<c-p>"
+                    feedkey = r"\<Plug>SuperTabBackward"
+                    mode = "p"
                 # Use remap mode so SuperTab mappings will be invoked.
-                mode = "m"
                 break
 
-        if feedkey:
-            _vim.feedkeys(feedkey, mode)
+        if feedkey == r"\<Plug>SuperTabForward" or feedkey == r"\<Plug>SuperTabBackward":
+            _vim.command("return SuperTab(%s)" % _vim.escape(mode))
+        elif feedkey:
+            _vim.command("return %s" % _vim.escape(feedkey))
 
     def snippet_sources(self):
         # a snippet source is anything having a .snippets method returning a

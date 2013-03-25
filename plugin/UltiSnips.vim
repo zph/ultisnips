@@ -69,7 +69,6 @@ let s:c.snipmate_ft_filter = get(s:c, 'snipmate_ft_filter', {
             \ })
 " }}}
 
-
 " UltiSnipsEdit will use this variable to decide if a new window
 " is opened when editing. default is "normal", allowed are also
 " "vertical", "horizontal"
