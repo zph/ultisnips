@@ -1,4 +1,4 @@
-*UltiSnips.txt*    For Vim version 7.0 or later.
+*UltiSnips-Quickstart.txt*    For Vim version 7.0 or later.
 
         The Ultimate Plugin for Snippets in Vim - forked version~
 
