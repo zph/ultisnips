@@ -2,6 +2,8 @@
 
         The Ultimate Plugin for Snippets in Vim~
 
+      >>> Please have a look at doc/UltiSnips-Quickstart.txt first!
+
 UltiSnips                                      *snippet* *snippets* *UltiSnips*
 
 1. Description                                  |UltiSnips-description|
@@ -42,6 +44,9 @@ UltiSnips                                      *snippet* *snippets* *UltiSnips*
    8.2 Snippets                                 |UltiSnips-contrisnippets|
 
 8. For Snipmate Users |UltiSnips-for-snipmate-users|
+
+
+      >>> Please have a look at doc/UltiSnips-Quickstart.txt first!
 
 This plugin only works if 'compatible' is not set.
 {Vi does not have any of these features}

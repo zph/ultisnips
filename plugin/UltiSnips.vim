@@ -61,6 +61,10 @@ let s:c.ChooseSnippetFileToEdit = get(s:c, 'SnippetFiles', 'UltiSnips#ChooseSnip
 let s:c.UltiSnips_ft_filter = get(s:c, 'UltiSnips_ft_filter', {
             \ 'default' : {'filetypes': ["all", "FILETYPE"] },
             \ 'html'    : {'filetypes': ["all", "html", "javascript"] },
+            \ 'xhtml'    : {'filetypes': ["all", "html"] },
+            \ 'cpp'    : {'filetypes': ["all", "cpp", "c"] },
+            \ 'zsh'    : {'filetypes': ["all", "zsh", "sh"] },
+            \ 'tex'    : {'filetypes': ["all", "tex", "texmath"] },
             \ })
 
 " don't load snipmate snippets by default

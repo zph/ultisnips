@@ -17,6 +17,8 @@ CONTENTS:
   98a. Notes for snipmate users:
   98b. Notes for UltiSnips users:
 
+  99. known bugs
+
   999. links
 
 ==============================================================================
@@ -133,10 +135,26 @@ placeholders are supported. See doc/UltiSnips.txt
 Please read the comments about how snippets are found and loaded carefully.
 This changed.
 
-vim:tw=78:ts=8:ft=help:norl:
+See BUG [1]
+
+
+==============================================================================
+99. known bugs
+
+BUG [1]:
+The "extends foo" syntax causes errors. The fix is to
+- delete it
+- tell UltiSnips manually that eg zsh should load sh files as seen in
+  plugin/UltiSnips.vim
+I'm sorry about this, probably this is "won't fix" because it would take too
+much time.
+
+There are probably more. Also see snipmate-merge-todo
 
 ==============================================================================
 999. links
 
 [parent_ultisnips]: See README.rst
 [SirVer's bugtracker]: https://bugs.launchpad.net/ultisnips
+
+vim:tw=78:ts=8:ft=help:norl:
