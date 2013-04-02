@@ -27,8 +27,9 @@ def err_to_scratch_buffer(f):
         except:
             s = \
 """An error occured. This is either a bug in UltiSnips or a bug in a
-snippet definition. If you think this is a bug, please report it to
-https://bugs.launchpad.net/ultisnips/+filebug.
+snippet definition.  See doc/UltiSnips-Quickstart.txt about how to contact the
+maintainer for this UltiSnips fork and where you should file a bug report
+
 
 Following is the full stack trace:
 """
