@@ -7,10 +7,9 @@
 "   directory above this file.
 " }}}
 
-" this kind of guard always annoys me .
-" if exists('did_UltiSnips_vim') || &cp || version < 700
-"    finish
-" endif
+if exists('did_UltiSnips_vim') || &cp || version < 700
+   finish
+endif
 if &compatible | echoe "UltiSnips requires :set nocompatible" | finish | endif
 
 " bind g:UltiSnips to local name s:c for convenience
@@ -18,10 +17,13 @@ if !exists('g:UltiSnips') | let g:UltiSnips = {} | endif | let s:c = g:UltiSnips
 
 " Define dummy version of function called by autocommand setup in
 " ftdetect/UltiSnips.vim.  If the function isn't defined (probably due to
-" using a copy of vim without python support) it will cause an error anytime a
+" using a copy of Vim without python support) it will cause an error anytime a
 " new file is opened.
 function! UltiSnips_FileTypeChanged()
 endfunction
+
+" TODO(#sirver): I like the dictionary for options better. Should we add
+" backwards compatibility for the old ultisnips config?
 
 " Global Variables, user interface configuration {{{
 
@@ -33,11 +35,12 @@ let s:c['MappingsToIgnore'] = get(s:c, 'MappingsToIgnore', [])
 
 " If the expand key doesn't trigger any snippet, show completion menu with
 " possible matches? Eg foo will be completed to foobar snippet name then
+" TODO(#sirver): This should be the default, no option needed I think.
 let s:c['CompletionMenu'] = get(s:c, 'CompletionMenu', 1)
 
 " A list of directory names that are searched for snippets.
-" Why is this necessary?
-" let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )
+" TODO(#sirver): This option is no longer used, it seems.
+let s:c['SnippetDirectories'] = get(s:c, 'SnippetDirectories', [ "UltiSnips" ] )
 
 " Which snippet files to use ? {{{1
 " The default implementation is written in VimL and called
@@ -80,14 +83,17 @@ let s:c['EditSplit'] = get(s:c, 'EditSplit', "normal" )
 
 " use Snipmate like or UltiSnips like interface?
 " values: UltiSnips or Snipmate
+" TODO(#sirver): What does this option affect?
 let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
 
+" TODO(#sirver): What does this option affect?
 let s:c['debug_snipmate_conversion'] = get(s:c, 'debug_snipmate_conversion', 0)
 
 " If there are multiple snippets matching a trigger the first one will be
 " chosen always if you set this to 1. This is useful if you have both:
 " UltiSnips and snipmate-snippets - and want the UltiSnips snippets to take
 " precedence.
+" TODO(#sirver): Something like this will be needed, but this seems clunky.
 let s:c['always_use_first_snippet'] = get(s:c, 'always_use_first_snippet', 0)
 
 " select python version, be backward compatible
@@ -215,5 +221,7 @@ function! UltiSnips_MapKeys()
 endf
 
 call UltiSnips_MapKeys()
+
+let did_UltiSnips_vim=1
 
 " vim: ts=8 sts=4 sw=4 expandtab
