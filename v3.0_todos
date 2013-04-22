@@ -1,4 +1,22 @@
+UltiSnips version 3.0 goals
+===========================
+
+- Rework matching engine to either get rid of diff based matching or make it
+  performant for huge snippets (100 lines or more).
+- Abandon launchpad and move bugs over to github/sirver/ultisnips
+- Completion dialog for snippets (ideally without any plugin dependency, but
+  this is low priority).
+- UltiSnips should be a drop in replacement for snipMate (and maybe others) by
+  stably parsing the file formats and understanding all features.
+- Splitting snippets from the engine.
+- Documentation updates: make a cool quickstart.
+
+UltiSnips Version 3.0 todos
+===========================
+
 Please note that some items in here might be "won't fix ever" items
+
+- check this list and remove stuff that is just no longer important/true
 
 - sample php
   if<tab> yields\
