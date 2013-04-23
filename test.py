@@ -2992,6 +2992,7 @@ class DeleteCurrentTabStop3_JumpAround(_VimTest):
 #                               END OF TEST                               #
 ###########################################################################
 
+# Main Method  {{{#
 
 if __name__ == '__main__':
     import sys
@@ -3056,6 +3057,7 @@ if __name__ == '__main__':
 
     # Now, source our runtime
     vim.send(":so plugin/UltiSnips.vim\n")
+    vim.send(":call UltiSnips#Setup()\n")
     time.sleep(2) # Parsing and initializing UltiSnips takes a while.
 
     # Inform all test case which screen session to use
@@ -3076,5 +3078,6 @@ if __name__ == '__main__':
     else:
         v = 1
     res = unittest.TextTestRunner(verbosity=v).run(suite)
+# End: Main Method  #}}}
 
 # vim:fileencoding=utf-8:foldmarker={{{#,#}}}:

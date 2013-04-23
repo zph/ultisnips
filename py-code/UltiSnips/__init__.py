@@ -25,6 +25,7 @@ def err_to_scratch_buffer(f):
         try:
             return f(self, *args, **kwds)
         except:
+            # NOCOM(#sirver): fix documentation text.
             s = \
 """An error occured. This is either a bug in UltiSnips or a bug in a
 snippet definition.  See doc/UltiSnips-Quickstart.txt about how to contact the
@@ -38,65 +39,65 @@ Following is the full stack trace:
             _vim.new_scratch_buffer(s)
     return wrapper
 
-# class _SnippetDictionary(object):
-#     def __init__(self, *args, **kwargs):
-#         self._added = []
-#         self.reset()
+class _SnippetDictionary(object):
+    def __init__(self, *args, **kwargs):
+        self._added = []
+        self.reset()
 
-#     def add_snippet(self, s, fn=None):
-# 	print "added", s
-#         if fn:
-#             self._snippets.append(s)
+    def add_snippet(self, s, fn=None):
+        print "added", s
+        if fn:
+            self._snippets.append(s)
 
-#             if fn not in self.files:
-#                 self.addfile(fn)
-#         else:
-#             self._added.append(s)
+            if fn not in self.files:
+                self.addfile(fn)
+        else:
+            self._added.append(s)
 
-#     def get_matching_snippets(self, trigger, potentially):
-#         """Returns all snippets matching the given trigger."""
-#         if not potentially:
-#             return [ s for s in self.snippets if s.matches(trigger) ]
-#         else:
-#             return [ s for s in self.snippets if s.could_match(trigger) ]
+    def get_matching_snippets(self, trigger, potentially):
+        """Returns all snippets matching the given trigger."""
+        if not potentially:
+            return [ s for s in self.snippets if s.matches(trigger) ]
+        else:
+            return [ s for s in self.snippets if s.could_match(trigger) ]
 
-#     @property
-#     def snippets(self):
-#         return self._added + self._snippets
+    @property
+    def snippets(self):
+        return self._added + self._snippets
 
-#     @property
-#     def files(self):
-#         return self._files
+    @property
+    def files(self):
+        return self._files
 
-#     def reset(self):
-#         self._snippets = []
-#         self._extends = []
-#         self._files = {}
-
-
-#     def _hash(self, path):
-#         if not os.path.isfile(path):
-#             return False
-
-#         return hashlib.sha1(open(path, "rb").read()).hexdigest()
+    def reset(self):
+        self._snippets = []
+        self._extends = []
+        self._files = {}
 
 
-#     def addfile(self, path):
-#         self.files[path] = self._hash(path)
+    def _hash(self, path):
+        if not os.path.isfile(path):
+            return False
 
-#     def needs_update(self):
-#         for path, hash in self.files.items():
-#             if not hash or hash != self._hash(path):
-#                 return True
-#         return False
+        return hashlib.sha1(open(path, "rb").read()).hexdigest()
 
-#     def extends():
-#         def fget(self):
-#             return self._extends
-#         def fset(self, value):
-#             self._extends = value
-#         return locals()
-#     extends = property(**extends())
+
+    def addfile(self, path):
+        self.files[path] = self._hash(path)
+
+    def needs_update(self):
+        for path, hash in self.files.items():
+            if not hash or hash != self._hash(path):
+                return True
+        return False
+
+    def extends():
+        def fget(self):
+            return self._extends
+        def fset(self, value):
+            self._extends = value
+        return locals()
+    extends = property(**extends())
 
 
 class _SnippetsFileParser(object):
@@ -241,7 +242,7 @@ class _SnippetsFileParser(object):
             head, tail = self._line_head_tail()
             if head == "extends":
                 if tail:
-                    # order must be preserved! if a coffeescript file extends javascript 
+                    # order must be preserved! if a coffeescript file extends javascript
                     # it must be able to override javascript snippets
                     # the big question is whether extends should apply on all
                     # &runtimepath files ..
@@ -563,6 +564,7 @@ class SnippetManager(object):
     def __init__(self):
         self._supertab_keys = None
         self._csnippets = []
+        self._snippet_dict = None  # # NOCOM(#sirver): this is currently only used in testing.
         self.snippet_file_cache = {}
         self._errors = []
         self.reset()
@@ -650,17 +652,17 @@ class SnippetManager(object):
         """
         self._visual_content.conserve()
 
-    # def snippet_dict(self, ft):
-    #     if ft not in self._snippets:
-    #         self._snippets[ft] = _SnippetDictionary()
-    #     return self._snippets[ft]
+    # NOCOM(#sirver): method needed? Use defaultdict?
+    def snippet_dict(self, ft):
+        if ft not in self._snippets:
+            self._snippets[ft] = _SnippetDictionary()
+        return self._snippets[ft]
 
-    # @err_to_scratch_buffer
-    # TODO: make this work again to be backward compatible
-    # def add_snippet(self, trigger, value, descr, options, ft = "all", globals = None, fn=None):
-    #     l = self.snippet_dict(ft).add_snippet(
-    #         Snippet(trigger, value, descr, options, globals or {}), fn
-    #     )
+    @err_to_scratch_buffer
+    def add_snippet(self, trigger, value, descr, options, ft = "all", globals = None, fn=None):
+        self.snippet_dict(ft).add_snippet(
+            Snippet(trigger, value, descr, options, globals or {}), fn
+        )
 
     # @err_to_scratch_buffer
     # def add_snippet_file(self, ft, path):
@@ -879,6 +881,7 @@ class SnippetManager(object):
 
         # now if we have errors tell the user by populating quickfix or error list
 
+# NOCOM(#sirver): support for post processing tabstops. not here though, while jumping.
         return list
 
     def _snips(self, before, possible):
@@ -895,6 +898,10 @@ class SnippetManager(object):
             for snippet in ss.snippets():
                 if getattr(snippet, method)(before):
                     found_snippets.append(snippet)
+
+        # # NOCOM(#sirver): for testing only
+        for ft in self._snippets:
+            found_snippets.extend(self._snippets[ft].get_matching_snippets(before, possible))
 
         # Search if any of the snippets overwrites the previous
         # Dictionary allows O(1) access for easy overwrites

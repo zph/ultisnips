@@ -162,6 +162,7 @@ endfunction
 
 fun! UltiSnips#CompleteSnippetTriggerFun(findstart, base)
   if a:findstart
+      " TODO(#sirver) What are those magic constants?
       let g:a=787
     return col('.')
   else
