@@ -2259,7 +2259,7 @@ class MultiWord_SnippetOptions_ExpandWordSnippets_ExpandSuffix(
 class _AnonBase(_VimTest):
     args = ""
     def _options_on(self):
-        self.send(":inoremap <silent> " + EA + ' <C-R>=UltiSnips_Anon('
+        self.send(":inoremap <silent> " + EA + ' <C-R>=UltiSnips#Anon('
                 + self.args + ')<cr>\n')
     def _options_off(self):
         self.send(":iunmap <silent> " + EA + '\n')
@@ -2312,7 +2312,7 @@ class Anon_Trigger_Opts(_AnonBase):
 class _AddFuncBase(_VimTest):
     args = ""
     def _options_on(self):
-        self.send(":call UltiSnips_AddSnippet("
+        self.send(":call UltiSnips#AddSnippet("
                 + self.args + ')\n')
 
 class AddFunc_Simple(_AddFuncBase):

@@ -14,9 +14,9 @@ UltiSnips version 3.0 goals
 UltiSnips Version 3.0 todos
 ===========================
 
-Please note that some items in here might be "won't fix ever" items
-
-- check this list and remove stuff that is just no longer important/true
+- document backwards incompatible changes
+  UltiSnips_Anon -> UltiSnip#Anon
+  UltiSnips#AddSnippet -> UltiSnip#AddSnippet
 
 - sample php
   if<tab> yields\
@@ -69,16 +69,10 @@ Please note that some items in here might be "won't fix ever" items
 - think about whether to keep the plugin already sourced guard.
   It always annoys me.
 
-- bzr ? there is an official mirror of a launchpad repo on github?
-  doc/UltiSnips.txt says bzr? That's confusing. Consider updating the list of
-  repos which is available
-
 - priorities. collisions? Which is the correct way to handle them?
   There is ! modifier, good!
 
 - make loading of snippets lazy for best performance
-
-- escaping $ etc will work. Great :) snipmate failed on that
 
 - what about reloading snippets?
   docs say:
@@ -87,10 +81,6 @@ Please note that some items in here might be "won't fix ever" items
 	and then press the <Tab> key.
 
   Does this affect all instances, or just the current running Vim instance?
-
-- nested snippets
-
-- ${VISUAL}: great :-)
 
 - what about xtemplate's completion feature stuff: eg input type for form
   elements? Does this work?
@@ -105,6 +95,7 @@ Please note that some items in here might be "won't fix ever" items
 - the <tab> completion triggers completion popup is missing. Probbably getting
   this working is little bit more work ..
 
+NOCOM(#sirver): this should be put back in place, but guarded through a variable that can be set. 
 ==== plugin/snipMate_compatibility.vim
 	If people use it they should be using teir own code or put this into their .vimrc
 	If they want to pollute the global namespace with a Filename word, then

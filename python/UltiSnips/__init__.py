@@ -1002,6 +1002,7 @@ class SnippetManager(object):
                     return "ultilsnips_action_completion_menu"
 
             # No snippet found
+            # # NOCOM(#sirver): typo, and strings are not very pretty.
             return "ultilsnips_action_none"
 
 
@@ -1034,6 +1035,7 @@ class SnippetManager(object):
         """
         return self._filetypes[_vim.buf.nr][0]
 
+    # NOCOM(#sirver): still used?
     def debug_snippets(self):
         sources = self.snippet_sources()
         # vim.command('sp snippets-names')

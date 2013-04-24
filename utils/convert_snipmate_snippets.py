@@ -12,7 +12,7 @@ import argparse
 print "please note that this utility has to be retested."
 print "Its because this UltiSnips branch can load snipmate snippets on the fly."
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "py-code")
+sys.path.append(os.path.join(os.path.dirname(__file__), "python")
 import UltiSnips.snipmate
 
 def convert_snippet_file(source):

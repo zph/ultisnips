@@ -1425,7 +1425,8 @@ Making UltiSnips read snipmate files only ~
 If you think the automatic conversion to UltiSnips fails you can debug the
 process by uncommenting the lines followed by
   "sp %s.converted"
-in py-code/UltiSnips/__init__.py
+in python/UltiSnips/__init__.py
+TODO(#sirver): debugging information has no place in user documentation.
 
 New features, eg try this: bbox<tab> (Damn, I broke it .. TODO)
 
