@@ -8,9 +8,6 @@ import hashlib
 import os
 import re
 import traceback
-import vim
-import sys
-import json
 
 from UltiSnips.compatibility import as_unicode, byte2col
 from UltiSnips._diff import diff, guess_edit
@@ -25,12 +22,10 @@ def err_to_scratch_buffer(f):
         try:
             return f(self, *args, **kwds)
         except:
-            # NOCOM(#sirver): fix documentation text.
             s = \
 """An error occured. This is either a bug in UltiSnips or a bug in a
-snippet definition.  See doc/UltiSnips-Quickstart.txt about how to contact the
-maintainer for this UltiSnips fork and where you should file a bug report
-
+snippet definition. If you think this is a bug, please report it to
+https://bugs.launchpad.net/ultisnips/+filebug.
 
 Following is the full stack trace:
 """
@@ -45,7 +40,6 @@ class _SnippetDictionary(object):
         self.reset()
 
     def add_snippet(self, s, fn=None):
-        print "added", s
         if fn:
             self._snippets.append(s)
 
@@ -64,6 +58,21 @@ class _SnippetDictionary(object):
     @property
     def snippets(self):
         return self._added + self._snippets
+
+    def clear_snippets(self, triggers=[]):
+        """Remove all snippets that match each trigger in triggers.
+            When triggers is empty, removes all snippets.
+        """
+        if triggers:
+            for t in triggers:
+                for s in self.get_matching_snippets(t, potentially=False):
+                    if s in self._snippets:
+                        self._snippets.remove(s)
+                    if s in self._added:
+                        self._added.remove(s)
+        else:
+            self._snippets = []
+            self._added = []
 
     @property
     def files(self):
@@ -99,52 +108,22 @@ class _SnippetDictionary(object):
         return locals()
     extends = property(**extends())
 
-
 class _SnippetsFileParser(object):
-    def __init__(self, ft, fn, error_fun, file_data=None, type_ = "UltiSnips"):
-        self._error_fun = error_fun # only the _error function is used of the manager
+    def __init__(self, ft, fn, snip_manager, file_data=None):
+        self._sm = snip_manager
         self._ft = ft
         self._fn = fn
         self._globals = {}
-        self._type = type_
-        self._snipmate_lines_shown = False
-        self.snippets = []
         if file_data is None:
             self._lines = open(fn).readlines()
         else:
             self._lines = file_data.splitlines(True)
 
-        # TODO: add debugging - maybe it just works
-        if (self._type == "snipmate"):
-            # convert to UltiSnips format
-            import UltiSnips.snipmate
-            [s, errors] = UltiSnips.snipmate.convert_snippet_lines(self._fn, self._lines)
-            self._lines = s.splitlines(True)
-
-            if len(errors) > 0:
-                self._show_lines()
-                for e in errors:
-                    e['text'] += ' while converting to UltiSnips format'
-                    self._error_fun(e)
-            self._fn = "%s.converted" % self._fn
-
-            if vim.eval('g:UltiSnips.debug_snipmate_conversion') == '1':
-                self._show_lines()
-
         self._idx = 0
 
-    def _show_lines(self):
-        if (self._type == "snipmate" and not self._snipmate_lines_shown):
-            vim.command("sp %s" % self._fn)
-            vim.current.buffer.append(self._lines)
-            vim.command("set hidden | q")
-            self._snipmate_lines_shown = True
-
-
     def _error(self, msg):
-        self._error_fun( {'filename': self._fn, 'lnum': self._idx + 1, 'text' : msg})
-
-        self._show_lines()
+        fn = _vim.eval("""fnamemodify(%s, ":~:.")""" % _vim.escape(self._fn))
+        self._sm._error("%s in %s(%d)" % (msg, fn, self._idx + 1))
 
     def _line(self):
         if self._idx < len(self._lines):
@@ -233,7 +212,7 @@ class _SnippetsFileParser(object):
                 self._globals[trig] = []
             self._globals[trig].append(cv)
         elif snip == "snippet":
-            self.snippets.append( Snippet(trig, cv, desc, opts, self._globals, self._fn) )
+            self._sm.add_snippet(trig, cv, desc, opts, self._ft, self._globals, fn=self._fn)
         else:
             self._error("Invalid snippet type: '%s'" % snip)
 
@@ -242,17 +221,8 @@ class _SnippetsFileParser(object):
             head, tail = self._line_head_tail()
             if head == "extends":
                 if tail:
-                    # order must be preserved! if a coffeescript file extends javascript
-                    # it must be able to override javascript snippets
-                    # the big question is whether extends should apply on all
-                    # &runtimepath files ..
-                    # Think about this
-                    # its possible to have infinite recursions .. should this
-                    # be detected?
-                    for e in tail.split(','):
-                        filename = os.path.join(os.path.dirname(self._fn), "%s.snippets" % e.strip())
-                        p = _SnippetsFileParser(self._ft, filename, self._sm.snippet_error, None)
-                        self.snippets.extend(p.snippets)
+                    self._sm.add_extending_info(self._ft,
+                        [ p.strip() for p in tail.split(',') ])
                 else:
                     self._error("'extends' without file types")
             elif head in ("snippet", "global"):
@@ -270,8 +240,7 @@ class Snippet(object):
     _INDENT = re.compile(r"^[ \t]*")
     _TABS = re.compile(r"^\t*")
 
-    def __init__(self, trigger, value, descr, options, globals, _fn = ""):
-        self._fn = _fn
+    def __init__(self, trigger, value, descr, options, globals):
         self._t = as_unicode(trigger)
         self._v = as_unicode(value)
         self._d = as_unicode(descr)
@@ -282,9 +251,6 @@ class Snippet(object):
 
     def __repr__(self):
         return "Snippet(%s,%s,%s)" % (self._t,self._d,self._opts)
-
-    def location_hint(self):
-        return re.sub('.*[\\/]([^\\/]*)[\\/](UltiSnips|snippets).(.*)\.snippets(\.converted)?', '\\1 \\3', self._fn)
 
     def _words_for_line(self, before, num_words=None):
         """ Gets the final num_words words from before.
@@ -353,7 +319,6 @@ class Snippet(object):
         elif "i" in self._opts:
             match = words.endswith(self._t)
         else:
-            # match = self._t.startswith(words)
             match = (words == self._t)
 
         # By default, we match the whole trigger
@@ -538,42 +503,13 @@ class VimState(object):
     def remembered_buffer(self):
         return self._lvb[:]
 
-# a container representing the snippets found in a file
-class SnippetFileCache(object):
-    def __init__(self, filename, _type):
-        self.filename = filename
-        self._type = _type
-    # if the file timestamp has changed reload the file
-    def parse(self, mtime):
-        ft = os.path.basename(self.filename).split(".")[0]
-        p = _SnippetsFileParser(ft, self.filename, UltiSnips_Manager.snippet_error, None, self._type)
-        p.parse()
-        self._snippets = p.snippets
-        self.mtime = mtime
-
-    # return snippets
-    def snippets(self):
-        mtime = os.path.getmtime(self.filename)
-        if (not hasattr(self, "mtime")) or self.mtime < mtime:
-            self.parse(mtime)
-        return self._snippets
-
 
 class SnippetManager(object):
-
     def __init__(self):
         self._supertab_keys = None
         self._csnippets = []
         self._snippet_dict = None  # # NOCOM(#sirver): this is currently only used in testing.
-        self.snippet_file_cache = {}
-        self._errors = []
         self.reset()
-
-    def snippet_error(self, err):
-        assert type(err) == type({})
-        for x in [ 'filename', 'lnum', 'text' ]:
-            assert x in err
-        self._errors.append(err)
 
     @err_to_scratch_buffer
     def reset(self, test_error=False):
@@ -590,24 +526,24 @@ class SnippetManager(object):
 
     @err_to_scratch_buffer
     def jump_forwards(self):
-        rv = self._jump()
-        if rv == "ultisnips_action_none":
+        _vim.command("let g:ulti_jump_forwards_res = 1")
+        if not self._jump():
+            _vim.command("let g:ulti_jump_forwards_res = 0")
             return self._handle_failure(self.forward_trigger)
-        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def jump_backwards(self):
-        rv = self._jump(True)
-        if rv == "ultisnips_action_none":
+        _vim.command("let g:ulti_jump_backwards_res = 1")
+        if not self._jump(True):
+            _vim.command("let g:ulti_jump_backwards_res = 0")
             return self._handle_failure(self.backward_trigger)
-        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def expand(self):
-        rv = self._try_expand()
-        if rv == "ultisnips_action_none":
+        _vim.command("let g:ulti_expand_res = 1")
+        if not self._try_expand():
+            _vim.command("let g:ulti_expand_res = 0")
             self._handle_failure(self.expand_trigger)
-        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def list_snippets(self):
@@ -636,12 +572,15 @@ class SnippetManager(object):
         expansion and forward jumping. It first tries to expand a snippet, if
         this fails, it tries to jump forward.
         """
+        # NOCOM(#sirver): return value seems clunky.
+        _vim.command('let g:ulti_expand_or_jump_res = 1')
         rv = self._try_expand()
-        if  rv == "ultilsnips_action_none":
+        if not rv:
+            _vim.command('let g:ulti_expand_or_jump_res = 2')
             rv = self._jump()
-        if rv == "ultilsnips_action_none":
+        if not rv:
+            _vim.command('let g:ulti_expand_or_jump_res = 0')
             self._handle_failure(self.expand_trigger)
-        _vim.command("let g:UltiSnips.pyResult = %s" % json.dumps(rv))
 
     @err_to_scratch_buffer
     def save_last_visual_selection(self):
@@ -660,14 +599,14 @@ class SnippetManager(object):
 
     @err_to_scratch_buffer
     def add_snippet(self, trigger, value, descr, options, ft = "all", globals = None, fn=None):
-        self.snippet_dict(ft).add_snippet(
+        l = self.snippet_dict(ft).add_snippet(
             Snippet(trigger, value, descr, options, globals or {}), fn
         )
 
-    # @err_to_scratch_buffer
-    # def add_snippet_file(self, ft, path):
-    #     sd = self.snippet_dict(ft)
-    #     sd.addfile(path)
+    @err_to_scratch_buffer
+    def add_snippet_file(self, ft, path):
+        sd = self.snippet_dict(ft)
+        sd.addfile(path)
 
     @err_to_scratch_buffer
     def expand_anon(self, value, trigger="", descr="", options="", globals=None):
@@ -802,7 +741,7 @@ class SnippetManager(object):
         self._csnippets.pop()
 
     def _jump(self, backwards = False):
-        jumped = "ultilsnips_action_none"
+        jumped = False
         if self._cs:
             self._ctab = self._cs.select_next_tab(backwards)
             if self._ctab:
@@ -815,7 +754,7 @@ class SnippetManager(object):
                             _vim.text_to_vim(Position(lineno,0), Position(
                                 lineno,len(before)+len(after)), m.group(1))
                 _vim.select(self._ctab.start, self._ctab.end)
-                jumped = "ultisnips_action_jumped"
+                jumped = True
                 if self._ctab.no == 0:
                     self._current_snippet_is_done()
             else:
@@ -824,7 +763,7 @@ class SnippetManager(object):
                 # Cleanup by removing current snippet and recursing.
                 self._current_snippet_is_done()
                 jumped = self._jump(backwards)
-        if jumped == "ultisnips_action_jumped":
+        if jumped:
             self._vstate.remember_position()
         return jumped
 
@@ -862,24 +801,24 @@ class SnippetManager(object):
         elif feedkey:
             _vim.command("return %s" % _vim.escape(feedkey))
 
-    def snippet_sources(self):
-        # a snippet source is anything having a .snippets method returning a
-        # list of snippets
-        list = []
+    # def snippet_sources(self):
+        # # a snippet source is anything having a .snippets method returning a
+        # # list of snippets
+        # list = []
 
-        snippet_files_by_type = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentExpansion, [&filetype])')
+        # snippet_files_by_type = _vim.eval('call(g:UltiSnips.SnippetFilesForCurrentExpansion, [&filetype])')
 
-        # allow UltiSnips overriding snipmate : TODO which order is correct?
-        for type_ in ["UltiSnips", "snipmate"]:
-            if type_ in snippet_files_by_type:
-                for file in snippet_files_by_type[type_]:
-                    if not file in self.snippet_file_cache:
-                        self.snippet_file_cache[file] = SnippetFileCache(file, type_)
-                    list.append(self.snippet_file_cache[file])
-        # TODO: add additional snippet sources
-        # TODO: allow post processing?
+        # # allow UltiSnips overriding snipmate : TODO which order is correct?
+        # for type_ in ["UltiSnips", "snipmate"]:
+            # if type_ in snippet_files_by_type:
+                # for file in snippet_files_by_type[type_]:
+                    # if not file in self.snippet_file_cache:
+                        # self.snippet_file_cache[file] = SnippetFileCache(file, type_)
+                    # list.append(self.snippet_file_cache[file])
+        # # TODO: add additional snippet sources
+        # # TODO: allow post processing?
 
-        # now if we have errors tell the user by populating quickfix or error list
+        # # now if we have errors tell the user by populating quickfix or error list
 
 # NOCOM(#sirver): support for post processing tabstops. not here though, while jumping.
         return list
@@ -889,19 +828,12 @@ class SnippetManager(object):
         before the cursor. If possible is True, then get all
         possible matches.
         """
-        self._errors = []
-
+        self._ensure_all_loaded()
+        filetypes = self._filetypes[_vim.buf.nr][::-1]
 
         found_snippets = []
-        method = "could_match" if possible else "matches"
-        for ss in self.snippet_sources():
-            for snippet in ss.snippets():
-                if getattr(snippet, method)(before):
-                    found_snippets.append(snippet)
-
-        # # NOCOM(#sirver): for testing only
-        for ft in self._snippets:
-            found_snippets.extend(self._snippets[ft].get_matching_snippets(before, possible))
+        for ft in filetypes:
+            found_snippets += self._find_snippets(ft, before, possible)
 
         # Search if any of the snippets overwrites the previous
         # Dictionary allows O(1) access for easy overwrites
@@ -916,24 +848,20 @@ class SnippetManager(object):
         # Return snippets to their original order
         snippets = [snip for snip in found_snippets if snip in selected_snippets]
 
-
-        if len(self._errors) > 0:
-            # quoting should be accurate enough hopefully ..
-            print >> sys.stderr, "There are snippet errors, use :cope to show them %d" % len(self._errors)
-            vim.command('call setqflist(%s)' % json.dumps(self._errors))
-            # vim.command('cope')
-
+        # NOCOM(#sirver): I like the cope approach. But this is not clean.
+        # if len(self._errors) > 0:
+            # # quoting should be accurate enough hopefully ..
+            # print >> sys.stderr, "There are snippet errors, use :cope to show them %d" % len(self._errors)
+            # vim.command('call setqflist(%s)' % json.dumps(self._errors))
+            # # vim.command('cope')
         return snippets
 
     def _ask_snippets(self, snippets):
         """ Given a list of snippets, ask the user which one they
         want to use, and return it.
         """
-        if vim.eval('g:UltiSnips.always_use_first_snippet') == '1':
-            return snippets[0]
-
         # make a python list
-        display = [ as_unicode("%i: %s from:%s") % (i+1, s.description, s.location_hint()) for i,s in enumerate(snippets)]
+        display = [ as_unicode("%i: %s") % (i+1,s.description) for i,s in enumerate(snippets)]
 
         try:
             rv = _vim.eval("inputlist(%s)" % _vim.escape(display))
@@ -979,43 +907,22 @@ class SnippetManager(object):
     def _try_expand(self):
         before, after = _vim.buf.current_line_splitted
         if not before:
-            return "ultisnips_action_none"
+            return False
         snippets = self._snips(before, False)
 
         if not snippets:
-            # retry with word boundary
-            snippets = self._snips(re.sub("^.*[^a-zA-Z0-9]+", "", before), False)
-
-        if not snippets:
-            if vim.eval('g:UltiSnips.CompletionMenu'):
-                snippets = self._snips(before, True)
-                snippets.sort(key=lambda x: x.trigger)
-
-                if (len(snippets) > 0):
-                    # prepare completion items, pass to vim:
-                    completion_items = [ {'word': s.trigger[len(s._matched):], 'info': ("%s\nloc: %s" % (s.description, s.location_hint()))} for s in snippets ]
-                    vim.command('let g:UltiSnips.completionItems = %s' % json.dumps(completion_items))
-                    # call completion
-                    old = vim.eval('&l:omnifunc')
-                    vim.command("let &l:omnifunc = 'UltiSnips#CompleteSnippetTriggerFun'")
-                    vim.command("call feedkeys(\"\\<c-x>\\<c-o>\\<c-r>=UltiSnips#ResetOmniFunc(\\\"%s\\\")\\<cr>\",'n')" % old)
-                    return "ultilsnips_action_completion_menu"
-
             # No snippet found
-            # # NOCOM(#sirver): typo, and strings are not very pretty.
-            return "ultilsnips_action_none"
-
-
+            return False
         elif len(snippets) == 1:
             snippet = snippets[0]
         else:
             snippet = self._ask_snippets(snippets)
             if not snippet:
-                return "ultisnips_action_user_abort"
+                return True
 
         self._do_snippet(snippet, before, after)
 
-        return "ultisnips_action_expanded"
+        return True
 
     @property
     def _cs(self):
@@ -1023,9 +930,45 @@ class SnippetManager(object):
             return None
         return self._csnippets[-1]
 
-    # def _parse_snippets(self, ft, fn, file_data=None):
-    #     self.add_snippet_file(ft, fn)
-    #     _SnippetsFileParser(ft, fn, self.snippet_error, file_data).parse()
+    def _parse_snippets(self, ft, fn, file_data=None):
+        self.add_snippet_file(ft, fn)
+        _SnippetsFileParser(ft, fn, self, file_data).parse()
+
+    def base_snippet_files_for(self, ft, default=True):
+        """ Returns a list of snippet files matching the given filetype (ft).
+        If default is set to false, it doesn't include shipped files.
+
+        Searches through each path in 'runtimepath' in reverse order,
+        in each of these, it searches each directory name listed in
+        'g:UltiSnipsSnippetDirectories' in order, then looks for files in these
+        directories called 'ft.snippets' or '*_ft.snippets' replacing ft with
+        the filetype.
+        """
+
+        snippet_dirs = _vim.eval("g:UltiSnipsSnippetDirectories")
+        base_snippets = os.path.realpath(os.path.join(__file__, "../../../UltiSnips"))
+        ret = []
+
+        paths = _vim.eval("&runtimepath").split(',')
+
+        if _vim.eval("exists('g:UltiSnipsDontReverseSearchPath')") == "0" or \
+           _vim.eval("g:UltiSnipsDontReverseSearchPath") == "0":
+            paths = paths[::-1]
+
+        for rtp in paths:
+            for snippet_dir in snippet_dirs:
+                pth = os.path.realpath(os.path.expanduser(os.path.join(rtp, snippet_dir)))
+
+                patterns = ["%s.snippets", "%s_*.snippets", os.path.join("%s","*")]
+                if not default and pth == base_snippets:
+                    patterns.remove("%s.snippets")
+
+                for pattern in patterns:
+                    for fn in glob.glob(os.path.join(pth, pattern % ft)):
+                        if fn not in ret:
+                            ret.append(fn)
+
+        return ret
 
     @property
     def primary_filetype(self):
@@ -1035,14 +978,140 @@ class SnippetManager(object):
         """
         return self._filetypes[_vim.buf.nr][0]
 
-    # NOCOM(#sirver): still used?
-    def debug_snippets(self):
-        sources = self.snippet_sources()
-        # vim.command('sp snippets-names')
-        for ss in sources:
-            for snippet in ss.snippets():
-                print snippet
-                # vim.current.buffer.append(snippet.__repr__)
+    def file_to_edit(self, ft):
+        """ Gets a file to edit based on the given filetype.
+        If no filetype is given, uses the current filetype from Vim.
+
+        Checks 'g:UltiSnipsSnippetsDir' and uses it if it exists
+        If a non-shipped file already exists, it uses it.
+        Otherwise uses a file in ~/.vim/ or ~/vimfiles
+        """
+        edit = None
+        existing = self.base_snippet_files_for(ft, False)
+        filename = ft + ".snippets"
+
+        if _vim.eval("exists('g:UltiSnipsSnippetsDir')") == "1":
+            snipdir = _vim.eval("g:UltiSnipsSnippetsDir")
+            edit = os.path.join(snipdir, filename)
+        elif existing:
+            edit = existing[-1] # last sourced/highest priority
+        else:
+            home = _vim.eval("$HOME")
+            rtp = [ os.path.realpath(os.path.expanduser(p)) for p in _vim.eval("&rtp").split(",") ]
+            snippet_dirs = ["UltiSnips"] + _vim.eval("g:UltiSnipsSnippetDirectories")
+            us = snippet_dirs[-1]
+
+            path = os.path.join(home, ".vim", us)
+            for dirname in [".vim", "vimfiles"]:
+                pth = os.path.join(home, dirname)
+                if pth in rtp:
+                    path = os.path.join(pth, us)
+
+            if not os.path.isdir(path):
+                os.mkdir(path)
+
+            edit = os.path.join(path, filename)
+
+        return edit
+
+    # Loading
+    def _load_snippets_for(self, ft):
+        self.snippet_dict(ft).reset()
+
+        for fn in self.base_snippet_files_for(ft):
+            self._parse_snippets(ft, fn)
+
+        # Now load for the parents
+        for p in self._snippets[ft].extends:
+            if p not in self._snippets:
+                self._load_snippets_for(p)
+
+
+    def _needs_update(self, ft):
+        do_hash = _vim.eval('exists("g:UltiSnipsDoHash")') == "0" \
+                or _vim.eval("g:UltiSnipsDoHash") != "0"
+
+        if ft not in self._snippets:
+            return True
+        elif do_hash and self.snippet_dict(ft).needs_update():
+            return True
+        elif do_hash:
+            cur_snips = set(self.base_snippet_files_for(ft))
+            old_snips = set(self.snippet_dict(ft).files)
+
+            if cur_snips - old_snips:
+                return True
+
+        return False
+
+
+    def _ensure_loaded(self, ft, checked=None):
+        if not checked:
+            checked = set([ft])
+        elif ft in checked:
+            return
+        else:
+            checked.add(ft)
+
+        if self._needs_update(ft):
+            self._load_snippets_for(ft)
+
+        for parent in self.snippet_dict(ft).extends:
+            self._ensure_loaded(parent, checked)
+
+
+    def _ensure_all_loaded(self):
+        for ft in self._filetypes[_vim.buf.nr]:
+            self._ensure_loaded(ft)
+
+    def reset_buffer_filetypes(self):
+        if _vim.buf.nr in self._filetypes:
+            del self._filetypes[_vim.buf.nr]
+
+    def add_buffer_filetypes(self, ft):
+        """ Checks for changes in the list of snippet files or the contents
+        of the snippet files and reloads them if necessary.
+        """
+        buf_fts = self._filetypes[_vim.buf.nr]
+        idx = -1
+        for ft in ft.split("."):
+            ft = ft.strip()
+            if not ft: continue
+            try:
+                idx = buf_fts.index(ft)
+            except ValueError:
+                self._filetypes[_vim.buf.nr].insert(idx + 1, ft)
+                idx += 1
+
+        self._ensure_all_loaded()
+
+    def _find_snippets(self, ft, trigger, potentially = False, seen=None):
+        """
+        Find snippets matching trigger
+
+        ft          - file type to search
+        trigger     - trigger to match against
+        potentially - also returns snippets that could potentially match; that
+                      is which triggers start with the current trigger
+        """
+        snips = self._snippets.get(ft,None)
+        if not snips:
+            return []
+
+        if not seen:
+            seen = []
+        seen.append(ft)
+
+        parent_results = []
+
+        for p in snips.extends:
+            if p not in seen:
+                seen.append(p)
+                parent_results += self._find_snippets(p, trigger,
+                        potentially, seen)
+
+        return parent_results + snips.get_matching_snippets(
+            trigger, potentially)
 
 
 UltiSnips_Manager = SnippetManager()

@@ -145,10 +145,19 @@ function! UltiSnips#FileTypeChanged()
     return ""
 endfunction
 
-function! UltiSnips#AddSnippet(...)
+" NOCOM(#sirver): document the name change to autoload
+" NOCOM(#sirver): revert to not using a dictionary for config
+function! UltiSnips#AddSnippet(trigger, value, descr, options, ...)
     " Takes the same arguments as SnippetManager.add_snippet:
     " (trigger, value, descr, options, ft = "all", globals = None)
-    call s:c.Py("UltiSnips_Manager.add_snippet(vim.eval('a:000'))")
+    " NOCOM(#sirver): understand how this calling works.
+    " NOCOM(#sirver): maybe bring back g:_uspy
+    exec "py " "args = vim.eval(\"a:000\")"
+    exec "py " "trigger = vim.eval(\"a:trigger\")"
+    exec "py " "value = vim.eval(\"a:value\")"
+    exec "py " "descr = vim.eval(\"a:descr\")"
+    exec "py " "options = vim.eval(\"a:options\")"
+    exec "py " "UltiSnips_Manager.add_snippet(trigger, value, descr, options, *args)"
     return ""
 endfunction
 

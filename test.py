@@ -28,7 +28,7 @@
 # Note that Gvim must use english keyboard input (choose in windows registry)
 # for this to work properly as SendKeys is a piece of chunk. (i.e. it sends
 # <F13> when you send a | symbol while using german key mappings)
-
+# NOCOM(#sirver): test tmux send-keys, maybe it is more stable than screen.
 import os
 import tempfile
 import unittest

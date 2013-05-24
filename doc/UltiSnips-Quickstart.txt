@@ -95,9 +95,6 @@ For details See doc/UltiSnips.txt section "3.3 Snippet Search Path".
                 \ }
     " you may want to replace ['all'] by ['all','FILETYPE'] in order to load
     " all snippets - If you load all snipmate-snippets and UltiSnips snippets
-    " you may also want to set always_use_first_snippet configuration option to
-    1 like this:
-    let g:UltiSnips.always_use_first_snippet = 1
 
     " == snipmate snippets ==
     " For any other filetype do what I used in the past: snipmate-snippets
