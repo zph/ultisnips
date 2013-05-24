@@ -270,8 +270,6 @@ called a global variable is set that contains the return value of the
 corresponding function.
 
 The corresponding variables and functions are:
-And g:UltiSnips.pyResult will contain the action which was taken, such as
-ultisnips_action_none
 
 UltiSnips_ExpandSnippet
 UltiSnips_ExpandSnippetOrJump

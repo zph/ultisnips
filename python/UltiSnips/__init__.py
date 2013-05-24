@@ -772,6 +772,7 @@ class SnippetManager(object):
         Mainly make sure that we play well with SuperTab
         """
         if trigger.lower() == "<tab>":
+            print "feedkeying"
             feedkey = "\\" + trigger
         else:
             feedkey = None

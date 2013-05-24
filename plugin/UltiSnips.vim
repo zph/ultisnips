@@ -83,11 +83,8 @@ let s:c['EditSplit'] = get(s:c, 'EditSplit', "normal" )
 
 " use Snipmate like or UltiSnips like interface?
 " values: UltiSnips or Snipmate
-" TODO(#sirver): What does this option affect?
+" TODO(#sirver): this can maybe be done more elegantly.
 let s:c['InterfaceFlavour'] = get(s:c, 'InterfaceFlavour', "UltiSnips" )
-
-" TODO(#sirver): What does this option affect?
-let s:c['debug_snipmate_conversion'] = get(s:c, 'debug_snipmate_conversion', 0)
 
 " select python version, be backward compatible
 " in the future just set PyCommand yourself
@@ -171,6 +168,7 @@ fun! s:c.Py(command)
     endif
   endif
 
+  " NOCOMMIT(#sirver): Old python detection was more complete I think.
   if !has_key(s:c, 'PyCommand') | throw "no working python found" | endif
    exec s:c.PyCommand.a:command
 endf
@@ -191,6 +189,7 @@ command! -nargs=0 UltiSnipsDebugSnippets :call UltiSnips#SetupM('', 'debug_snipp
 
 "" }}}
 
+" NOCOM(#sirver): theory here is that the dispatching trough the function kills feedkeys
 function! UltiSnips_MapKeys()
     " Map the keys correctly
     if g:UltiSnipsExpandTrigger == g:UltiSnipsJumpForwardTrigger
@@ -213,7 +212,30 @@ function! UltiSnips_MapKeys()
     snoremap <silent> <c-h> <c-g>c
 endf
 
-call UltiSnips_MapKeys()
+function! UltiSnips_MapKeys_Master()
+    " Map the keys correctly
+    if g:UltiSnipsExpandTrigger == g:UltiSnipsJumpForwardTrigger
+
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#ExpandSnippetOrJump()<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#ExpandSnippetOrJump()<cr>"
+    else
+        exec "inoremap <silent> " . g:UltiSnipsExpandTrigger . " <C-R>=UltiSnips#ExpandSnippet()<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsExpandTrigger . " <Esc>:call UltiSnips#ExpandSnippet()<cr>"
+        exec "inoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <C-R>=UltiSnips#JumpForwards()<cr>"
+        exec "snoremap <silent> " . g:UltiSnipsJumpForwardTrigger  . " <Esc>:call UltiSnips#JumpForwards()<cr>"
+    endif
+    exec 'xnoremap ' . g:UltiSnipsExpandTrigger. ' :call UltiSnips#SaveLastVisualSelection()<cr>gvs'
+    exec "inoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <C-R>=UltiSnips#JumpBackwards()<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsJumpBackwardTrigger . " <Esc>:call UltiSnips#JumpBackwards()<cr>"
+    exec "inoremap <silent> " . g:UltiSnipsListSnippets . " <C-R>=UltiSnips#ListSnippets()<cr>"
+    exec "snoremap <silent> " . g:UltiSnipsListSnippets . " <Esc>:call UltiSnips#ListSnippets()<cr>"
+
+    snoremap <silent> <BS> <c-g>c
+    snoremap <silent> <DEL> <c-g>c
+    snoremap <silent> <c-h> <c-g>c
+endf
+
+call UltiSnips_MapKeys_Master()
 
 let did_UltiSnips_vim=1
 

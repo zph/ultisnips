@@ -1,5 +1,16 @@
+" File: UltiSnips.vim
+" Author: Holger Rapp <SirVer@gmx.de>
+" Description: The Ultimate Snippets solution for Vim
+"
+" Testing Info: {{{
+"   See directions at the top of the test.py script located one
+"   directory above this file.
+" }}}
+
 if !exists('g:UltiSnips') | let g:UltiSnips = {} | endif | let s:c = g:UltiSnips
 
+" NOCOM(#sirver): the approach with the OmniFunc for the completion menu is
+" very clever
 let s:did_setup = 0
 
 " <sfile> does not work inside functions :(
@@ -20,27 +31,28 @@ fun! UltiSnips#Setup()
     au CursorMoved * call g:UltiSnips.Py("UltiSnips_Manager.cursor_moved()")
     au BufLeave * call g:UltiSnips.Py("UltiSnips_Manager.leaving_buffer()")
 
+    if !exists("g:UltiSnipsUsePythonVersion")
+        let g:_uspy=":py3 "
+        if !has("python3")
+            if !has("python")
+                if !exists("g:UltiSnipsNoPythonWarning")
+                    echo  "UltiSnips requires py >= 2.6 or any py3"
+                endif
+                finish
+            endif
+            let g:_uspy=":py "
+        endif
+        let g:UltiSnipsUsePythonVersion = "<tab>"
+    else
+        if g:UltiSnipsUsePythonVersion == 2
+            let g:_uspy=":py "
+        else
+            let g:_uspy=":py3 "
+        endif
+    endif
     let s:did_setup = 1
   endif
 endf
-
-" lazily setup Ultisnip, then dispatch action to python's UltiSnips_Manager
-" instance
-" Allow calling CompensateForPUM for those actions requiring it
-fun! UltiSnips#SetupM(c, s)
-  call UltiSnips#Setup()
-  if a:s == 'c'
-    call CompensateForPUM()
-  endif
-  let s:c.pyResult = ""
-  call s:c.Py("UltiSnips_Manager.".a:s)
-  return ""
-endf
-" fun! UltiSnips#SetupV(fun, ...)
-"   call UltiSnips#Setup()
-"   return call('UltiSnips#'.a:fun, a:000)
-" endf
-
 " }}}
 
 " editing snippets {{{
@@ -138,10 +150,42 @@ fun! CompensateForPUM()
         call s:c.Py("UltiSnips_Manager.cursor_moved()")
     endif
 endfunction
+function! UltiSnips#ExpandSnippet()
+    exec g:_uspy "UltiSnips_Manager.expand()"
+    return ""
+endfunction
+
+function! UltiSnips#ExpandSnippetOrJump()
+    call CompensateForPUM()
+    exec g:_uspy "UltiSnips_Manager.expand_or_jump()"
+    return ""
+endfunction
+
+function! UltiSnips#ListSnippets()
+    exec g:_uspy "UltiSnips_Manager.list_snippets()"
+    return ""
+endfunction
+
+function! UltiSnips#SaveLastVisualSelection()
+    exec g:_uspy "UltiSnips_Manager.save_last_visual_selection()"
+    return ""
+endfunction
+
+function! UltiSnips#JumpBackwards()
+    call CompensateForPUM()
+    exec g:_uspy "UltiSnips_Manager.jump_backwards()"
+    return ""
+endfunction
+
+function! UltiSnips#JumpForwards()
+    call CompensateForPUM()
+    exec g:_uspy "UltiSnips_Manager.jump_forwards()"
+    return ""
+endfunction
 
 function! UltiSnips#FileTypeChanged()
-    call s:c.Py("UltiSnips_Manager.reset_buffer_filetypes()")
-    call s:c.Py("UltiSnips_Manager.add_buffer_filetypes('" . &ft . "')")
+    exec g:_uspy "UltiSnips_Manager.reset_buffer_filetypes()"
+    exec g:_uspy "UltiSnips_Manager.add_buffer_filetypes('" . &ft . "')"
     return ""
 endfunction
 
@@ -161,10 +205,13 @@ function! UltiSnips#AddSnippet(trigger, value, descr, options, ...)
     return ""
 endfunction
 
-function! UltiSnips#Anon(...)
+function! UltiSnips#Anon(value, ...)
     " Takes the same arguments as SnippetManager.expand_anon:
     " (value, trigger="", descr="", options="", globals = None)
-    call s:c.Py("UltiSnips_Manager.expand_anon(vim.eval('a:000'))")
+    " NOCOM(#sirver): understand how this calling works.
+    exec "py " "args = vim.eval(\"a:000\")"
+    exec "py " "value = vim.eval(\"a:value\")"
+    exec "py " "UltiSnips_Manager.expand_anon(value, *args)"
     return ""
 endfunction
 " }}}
