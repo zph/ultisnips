@@ -603,7 +603,8 @@ class VimState(object):
 
 class SnippetManager(object):
     def __init__(self):
-        # NOCOM(#sirver): this does not do anything useful right now.
+        # NOCOM(#sirver): this does not do anything useful right now. also, this should somehow
+        # be more plugin like and give others a chance as well. Maybe this could even be a Vim variable.
         self._snippet_providers = [
             UltiSnips_SnippetProvider()
         ]
@@ -1070,6 +1071,7 @@ class SnippetManager(object):
             self._ensure_loaded(parent, checked)
 
     def _ensure_all_loaded(self):
+        # NOCOM(#sirver): try to peel these methods out into a SnippetProvider
         for ft in self._filetypes[_vim.buf.nr]:
             self._ensure_loaded(ft)
 
