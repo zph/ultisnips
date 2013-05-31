@@ -2,10 +2,6 @@ version 3beta:
 	There are su many changes and maybe we'll not be comptabile anymore
 	Thus consider bumping version to 3
 
-	- NOTE: Some refactoring has taken place. Some things may be broken.
-	  If you're hit by such an issue revert to an older version and tell
-	  us to fix it.
-
 	- No more UltiSnipsNoPythonWarning setting. Warning only happens when
 	  you use UltiSnippets
 	- settings use this style now:

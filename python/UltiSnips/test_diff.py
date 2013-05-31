@@ -3,6 +3,7 @@
 
 import unittest
 
+# NOCOM(#sirver): remove this nonsense again
 import os.path as p, sys; sys.path.append(p.join(p.dirname(__file__), ".."))
 
 from _diff import diff, guess_edit

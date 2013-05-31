@@ -62,7 +62,8 @@ EA = "#" # Expand anonymous
 COMPL_KW = chr(24)+chr(14)
 COMPL_ACCEPT = chr(25)
 
-NUMBER_OF_RETRIES_FOR_EACH_TEST = 4
+# NOCOM(#sirver): this used to be 4
+NUMBER_OF_RETRIES_FOR_EACH_TEST = 1
 
 class VimInterface:
     def focus(title=None):
@@ -200,6 +201,7 @@ class VimInterfaceWindows(VimInterface):
 
 class _VimTest(unittest.TestCase):
     snippets = ("dummy", "donotdefine")
+    # NOCOM(#sirver): this should go away rather soon.
     snippets_test_file = ("", "", "")  # file type, file name, file content
     text_before = " --- some text before --- \n\n"
     text_after =  "\n\n --- some text after --- "
@@ -277,7 +279,7 @@ class _VimTest(unittest.TestCase):
             self.snippets = ( self.snippets, )
 
         for s in self.snippets:
-            sv,content = s[:2]
+            sv, content = s[:2]
             descr = ""
             options = ""
             if len(s) > 2:
@@ -2386,13 +2388,13 @@ class ProperIndenting_FirstLineInFile_ECR(_PS_Base):
     text_after = ""
     snippets_test_file = ("all", "test_file", r"""
 global !p
-def complete(t, opts):
+def complete(t, options):
   if t:
-    opts = [ m[len(t):] for m in opts if m.startswith(t) ]
-  if len(opts) == 1:
-    return opts[0]
-  elif len(opts) > 1:
-    return "(" + "|".join(opts) + ")"
+    options = [ m[len(t):] for m in options if m.startswith(t) ]
+  if len(options) == 1:
+    return options[0]
+  elif len(options) > 1:
+    return "(" + "|".join(options) + ")"
   else:
     return ""
 endglobal
