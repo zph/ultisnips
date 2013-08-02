@@ -70,6 +70,16 @@ def ${1:name} do
 end
 endsnippet
 
+snippet defin "def function(n), do: n"
+def ${1:name},  do: ${2}
+endsnippet
+
+snippet defg
+def ${1:name} when ${2:guard-condition} do
+	${3}
+end
+endsnippet
+
 snippet defim
 defimpl ${1:protocol_name}, for: ${2:data_type} do
 	${3}
@@ -80,6 +90,7 @@ snippet defma
 defmacro ${1:name} do
 	${2}
 end
+endsnippet
 
 snippet defmo
 defmodule ${1:module_name} do
@@ -112,9 +123,9 @@ fn(${1:args}) -> ${2} end
 endsnippet
 
 snippet fun
-			function do
-				${1}
-			end
+function do
+	${1}
+end
 endsnippet
 
 snippet mdoc
@@ -138,7 +149,7 @@ snippet imp
 import ${1:module_name}
 endsnippet
 
-snippet ali
+snippet ali "alias old-module to shorthand"
 alias ${1:module_name}
 endsnippet
 
