@@ -566,4 +566,21 @@ snippet ###
 =end
 endsnippet
 
+# Rspec
+snippet describe "describe"
+describe ${1:description} do
+	$0
+end
+endsnippet
+
+snippet it "it block"
+it "${1:description}" do
+	$0
+end
+endsnippet
+
+snippet xit "it block"
+xit "${1:description}"
+endsnippet
+
 # vim: set ts=2 sw=2 expandtab:
