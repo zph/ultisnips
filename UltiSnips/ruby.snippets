@@ -534,13 +534,9 @@ $0
 end
 endsnippet
 
-
-
 snippet alias "alias :<new_name> :<old_name>"
 alias :${1:new_name} :${2:old_name}
 endsnippet
-
-
 
 snippet class "class <class_name> def initialize ... end end"
 class ${1:class_name}
@@ -549,8 +545,6 @@ class ${1:class_name}
 	end
 end
 endsnippet
-
-
 
 snippet module "module"
 module ${1:module_name}
@@ -566,6 +560,8 @@ snippet ###
 =end
 endsnippet
 
+
+
 # Rspec
 snippet describe "describe"
 describe ${1:description} do
@@ -573,14 +569,23 @@ describe ${1:description} do
 end
 endsnippet
 
+
+
 snippet it "it block"
 it "${1:description}" do
 	$0
 end
 endsnippet
 
+
+
 snippet xit "it block"
 xit "${1:description}"
 endsnippet
 
+
+
+snippet exp "expect(FOO).to #"
+expect(${1:object}).to $0
+endsnippet
 # vim: set ts=2 sw=2 expandtab:
